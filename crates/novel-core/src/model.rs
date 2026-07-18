@@ -374,6 +374,7 @@ pub struct ProviderStamp {
 pub struct Finding {
     pub id: String,
     pub rule_id: String,
+    pub rule_version: u32,
     pub category: RuleCategory,
     pub alert_level: AlertLevel,
     /// Integer basis points (0..=10_000) avoid platform-dependent float JSON.

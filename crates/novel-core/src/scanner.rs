@@ -219,7 +219,7 @@ impl ScanEngine {
             };
             let response = self.provider.analyze(&request).await?;
             let chapter_findings =
-                self.materialize_findings(task, document, chapter, &rules, response.candidates);
+                self.materialize_findings(task, document, chapter, &rules, response.candidates)?;
 
             let mut next_context = self
                 .compressor
@@ -285,13 +285,14 @@ impl ScanEngine {
         chapter: &Chapter,
         rules: &[RuleContext],
         candidates: Vec<ProviderCandidate>,
-    ) -> Vec<Finding> {
+    ) -> Result<Vec<Finding>, ScanError> {
         let classification_by_rule = rules
             .iter()
             .map(|rule| {
                 (
                     rule.id.as_str(),
                     (
+                        rule.version,
                         rule.category,
                         rule.alert_level,
                         rule.confirmation_scope,
@@ -302,11 +303,16 @@ impl ScanEngine {
             .collect::<HashMap<_, _>>();
         let source = ChapterRef::from_chapter(&document.id, chapter);
 
-        candidates
+        let raw = candidates
             .into_iter()
             .filter_map(|candidate| {
-                let (category, alert_level, confirmation_scope, requires_user_boundary) =
-                    *classification_by_rule.get(candidate.rule_id.as_str())?;
+                let (
+                    rule_version,
+                    category,
+                    alert_level,
+                    confirmation_scope,
+                    requires_user_boundary,
+                ) = *classification_by_rule.get(candidate.rule_id.as_str())?;
                 let mut evidence = Vec::new();
                 let mut invalid_ranges = 0usize;
                 for range in &candidate.evidence_ranges {
@@ -372,10 +378,11 @@ impl ScanEngine {
                     FindingStatus::Confirmed | FindingStatus::Rejected => None,
                 };
                 let id_material = format!(
-                    "{}\0{}\0{}\0{}\0{}\0{}\0{}\0{:?}",
+                    "{}\0{}\0{}\0{}\0{}\0{}\0{}\0{}\0{:?}",
                     task.id,
                     chapter.id,
                     candidate.rule_id,
+                    rule_version,
                     category_tag(category),
                     alert_level_tag(alert_level),
                     finding_status_tag(status),
@@ -386,6 +393,7 @@ impl ScanEngine {
                 Some(Finding {
                     id: format!("finding_{}", stable_fingerprint(id_material.as_bytes())),
                     rule_id: candidate.rule_id,
+                    rule_version,
                     category,
                     alert_level,
                     confidence_bps: candidate.confidence_bps.min(10_000),
@@ -400,7 +408,25 @@ impl ScanEngine {
                     },
                 })
             })
-            .collect()
+            .collect::<Vec<_>>();
+
+        // Deduplicate by stable finding ID. Same ID + identical content → keep
+        // first. Same ID + different content → error.
+        let mut deduped: std::collections::BTreeMap<String, Finding> =
+            std::collections::BTreeMap::new();
+        for finding in raw {
+            if let Some(existing) = deduped.get(&finding.id) {
+                if existing != &finding {
+                    return Err(ScanError::InvalidInput(format!(
+                        "conflicting candidates produce same finding id '{}'",
+                        finding.id
+                    )));
+                }
+            } else {
+                deduped.insert(finding.id.clone(), finding);
+            }
+        }
+        Ok(deduped.into_values().collect())
     }
 }
 
@@ -829,6 +855,7 @@ mod tests {
         assert!(result.complete);
         assert_eq!(result.new_findings, 1);
         let finding = &result.checkpoint.findings[0];
+        assert_eq!(finding.rule_version, 1);
         assert_eq!(finding.category, RuleCategory::Frustration);
         assert_eq!(finding.alert_level, AlertLevel::Critical);
         assert_eq!(finding.status, FindingStatus::Confirmed);
@@ -1212,5 +1239,148 @@ mod tests {
             matches!(resume_c, Err(ScanError::ResumeMismatch(_))),
             "different model should be rejected"
         );
+    }
+
+    #[test]
+    fn finding_snapshots_rule_version_and_id_depends_on_it() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+
+        let rule_v1 = RuleDefinition {
+            version: 1,
+            ..rule()
+        };
+        let rule_v2 = RuleDefinition {
+            version: 2,
+            ..rule()
+        };
+
+        let result_v1 =
+            ready(engine().scan_batch(&scan_task, &document, &[rule_v1.clone()], None, None, 1))
+                .unwrap();
+        let result_v2 =
+            ready(engine().scan_batch(&scan_task, &document, &[rule_v2.clone()], None, None, 1))
+                .unwrap();
+
+        let f1 = &result_v1.checkpoint.findings[0];
+        let f2 = &result_v2.checkpoint.findings[0];
+        assert_eq!(f1.rule_version, 1);
+        assert_eq!(f2.rule_version, 2);
+        assert_ne!(
+            f1.id, f2.id,
+            "different versions must produce different finding IDs"
+        );
+    }
+
+    struct PresetProvider {
+        candidates: Vec<ProviderCandidate>,
+    }
+
+    impl ModelProvider for PresetProvider {
+        fn provider_id(&self) -> &str {
+            "preset"
+        }
+
+        fn model_id(&self) -> &str {
+            "preset-v1"
+        }
+
+        fn analyze<'a>(&'a self, _request: &'a crate::InferenceRequest) -> ProviderFuture<'a> {
+            Box::pin(async {
+                Ok(ProviderResponse {
+                    candidates: self.candidates.clone(),
+                    usage: Default::default(),
+                })
+            })
+        }
+    }
+
+    #[test]
+    fn duplicate_provider_candidates_are_deduplicated() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "这里发生接盘")],
+        );
+        let scan_task = task(&document.id);
+        let candidate = ProviderCandidate {
+            rule_id: "takeover".into(),
+            confidence_bps: 9_000,
+            rationale: "重复候选".into(),
+            requires_later_confirmation: false,
+            evidence_ranges: vec![ProviderEvidenceRange {
+                utf8_byte_start: 12, // "接盘" in "这里发生接盘"
+                utf8_byte_end: 18,
+            }],
+        };
+        let engine = ScanEngine::new(
+            Arc::new(PresetProvider {
+                candidates: vec![candidate.clone(), candidate.clone()],
+            }),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+
+        let result =
+            ready(engine.scan_batch(&scan_task, &document, &[rule()], None, None, 1)).unwrap();
+        assert_eq!(result.new_findings, 1);
+        assert_eq!(result.checkpoint.findings.len(), 1);
+    }
+
+    #[test]
+    fn conflicting_candidates_with_same_stable_id_are_rejected() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "这里发生接盘")],
+        );
+        let scan_task = task(&document.id);
+        let start = 12u32;
+        let end = 18u32;
+        let range = ProviderEvidenceRange {
+            utf8_byte_start: start as usize,
+            utf8_byte_end: end as usize,
+        };
+        let candidate_a = ProviderCandidate {
+            rule_id: "takeover".into(),
+            confidence_bps: 9_000,
+            rationale: "相同ID原料".into(),
+            requires_later_confirmation: false,
+            evidence_ranges: vec![range.clone()],
+        };
+        let candidate_b = ProviderCandidate {
+            rule_id: "takeover".into(),
+            confidence_bps: 5_000, // different confidence, same ID material
+            rationale: "相同ID原料".into(),
+            requires_later_confirmation: false,
+            evidence_ranges: vec![range],
+        };
+        let engine = ScanEngine::new(
+            Arc::new(PresetProvider {
+                candidates: vec![candidate_a, candidate_b],
+            }),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let store = InMemoryCheckpointStore::default();
+
+        let error =
+            ready(engine.scan_batch(&scan_task, &document, &[rule()], None, Some(&store), 1))
+                .unwrap_err();
+        assert!(matches!(error, ScanError::InvalidInput(_)));
+        let message = format!("{error}");
+        assert!(
+            message.contains("conflicting candidates"),
+            "error should mention conflicting candidates: {message}"
+        );
+        assert!(store.load(&scan_task.id).unwrap().is_none());
     }
 }
