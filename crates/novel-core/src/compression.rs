@@ -24,7 +24,8 @@ pub struct ContextSnapshot {
     pub rolling_summary: String,
     #[serde(default)]
     pub entities: Vec<EntityMemory>,
-    /// IDs or short descriptions that later chapters may confirm. They must
+    /// Stable finding IDs that later chapters may confirm. Each ID must
+    /// correspond to a Suspected or PendingConfirmation finding. They must
     /// never be surfaced as confirmed findings without exact source anchors.
     #[serde(default)]
     pub unresolved_candidates: Vec<String>,

@@ -547,6 +547,56 @@ fn validate_checkpoint(
         provider_id,
         model_id,
     )?;
+    validate_unresolved_candidates(
+        &checkpoint.context.unresolved_candidates,
+        &checkpoint.findings,
+    )?;
+    Ok(())
+}
+
+fn validate_unresolved_candidates(
+    unresolved_ids: &[String],
+    findings: &[Finding],
+) -> Result<(), ScanError> {
+    let findings_by_id: HashMap<&str, &Finding> =
+        findings.iter().map(|f| (f.id.as_str(), f)).collect();
+
+    let mut seen = std::collections::HashSet::new();
+    for id in unresolved_ids {
+        if !seen.insert(id.as_str()) {
+            return Err(ScanError::ResumeMismatch(format!(
+                "duplicate unresolved candidate '{}'",
+                id
+            )));
+        }
+        let finding = findings_by_id.get(id.as_str()).ok_or_else(|| {
+            ScanError::ResumeMismatch(format!("unknown unresolved candidate '{}'", id))
+        })?;
+        if !matches!(
+            finding.status,
+            FindingStatus::Suspected | FindingStatus::PendingConfirmation
+        ) {
+            return Err(ScanError::ResumeMismatch(format!(
+                "unresolved candidate '{}' has status {:?}, expected suspected or pending_confirmation",
+                id, finding.status
+            )));
+        }
+    }
+
+    // Every Suspected/PendingConfirmation finding must appear in unresolved_ids.
+    for finding in findings {
+        if matches!(
+            finding.status,
+            FindingStatus::Suspected | FindingStatus::PendingConfirmation
+        ) && !seen.contains(finding.id.as_str())
+        {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' is {:?} but missing from unresolved candidates",
+                finding.id, finding.status
+            )));
+        }
+    }
+
     Ok(())
 }
 
@@ -619,6 +669,24 @@ fn validate_persisted_findings(
                 "finding '{}' model_id '{}' does not match current '{}'",
                 finding.id, finding.provider.model_id, model_id
             )));
+        }
+        // Re-apply the scope/boundary gates that were enforced during scan.
+        if finding.status == FindingStatus::Confirmed {
+            if matches!(
+                resolved.confirmation_scope,
+                ConfirmationScope::CrossChapter | ConfirmationScope::WholeBook
+            ) {
+                return Err(ScanError::ResumeMismatch(format!(
+                    "finding '{}' is Confirmed but confirmation_scope is {:?}",
+                    finding.id, resolved.confirmation_scope
+                )));
+            }
+            if resolved.requires_user_boundary {
+                return Err(ScanError::ResumeMismatch(format!(
+                    "finding '{}' is Confirmed but rule requires user boundary",
+                    finding.id
+                )));
+            }
         }
         if !processed_chapter_ids.contains(finding.source.chapter_id.as_str()) {
             return Err(ScanError::ResumeMismatch(format!(
@@ -1713,5 +1781,282 @@ mod tests {
         let resumed = &result.checkpoint.findings[0];
         assert_eq!(resumed.status, FindingStatus::Suspected);
         assert!(resumed.evidence.is_empty());
+    }
+
+    // ── DS-11: scope/boundary gate on resume ──
+
+    fn rule_with_scope(scope: ConfirmationScope) -> RuleDefinition {
+        RuleDefinition {
+            confirmation_scope: scope,
+            requires_user_boundary: false,
+            ..rule()
+        }
+    }
+
+    fn rule_with_boundary() -> RuleDefinition {
+        RuleDefinition {
+            confirmation_scope: ConfirmationScope::Local,
+            requires_user_boundary: true,
+            ..rule()
+        }
+    }
+
+    #[test]
+    fn resume_reapplies_confirmation_scope_gate() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+
+        // CrossChapter: legitimately produces PendingConfirmation, tamper to Confirmed
+        let r_cross = rule_with_scope(ConfirmationScope::CrossChapter);
+        let mut cp_cross =
+            ready(engine().scan_batch(&scan_task, &document, &[r_cross.clone()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        cp_cross.findings[0].status = FindingStatus::Confirmed;
+        let error = ready(engine().scan_batch(
+            &scan_task,
+            &document,
+            &[r_cross.clone()],
+            Some(cp_cross),
+            None,
+            0,
+        ))
+        .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("confirmation_scope"));
+
+        // WholeBook: same pattern
+        let r_whole = rule_with_scope(ConfirmationScope::WholeBook);
+        let mut cp_whole =
+            ready(engine().scan_batch(&scan_task, &document, &[r_whole.clone()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        cp_whole.findings[0].status = FindingStatus::Confirmed;
+        let error = ready(engine().scan_batch(
+            &scan_task,
+            &document,
+            &[r_whole.clone()],
+            Some(cp_whole),
+            None,
+            0,
+        ))
+        .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("confirmation_scope"));
+
+        // Local: legitimate Confirmed should resume ok
+        let r_local = rule_with_scope(ConfirmationScope::Local);
+        let cp_local =
+            ready(engine().scan_batch(&scan_task, &document, &[r_local.clone()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        assert_eq!(cp_local.findings[0].status, FindingStatus::Confirmed);
+        let resume = ready(engine().scan_batch(
+            &scan_task,
+            &document,
+            &[r_local.clone()],
+            Some(cp_local),
+            None,
+            0,
+        ));
+        assert!(resume.is_ok(), "Local Confirmed should resume ok");
+
+        // Chapter: legitimate Confirmed should resume ok
+        let r_chapter = rule_with_scope(ConfirmationScope::Chapter);
+        let cp_chapter =
+            ready(engine().scan_batch(&scan_task, &document, &[r_chapter.clone()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        assert_eq!(cp_chapter.findings[0].status, FindingStatus::Confirmed);
+        let resume = ready(engine().scan_batch(
+            &scan_task,
+            &document,
+            &[r_chapter.clone()],
+            Some(cp_chapter),
+            None,
+            0,
+        ));
+        assert!(resume.is_ok(), "Chapter Confirmed should resume ok");
+    }
+
+    #[test]
+    fn resume_reapplies_user_boundary_gate() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        let r = rule_with_boundary();
+        let mut checkpoint =
+            ready(engine().scan_batch(&scan_task, &document, &[r.clone()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        // requires_user_boundary=true should produce PendingConfirmation
+        assert_eq!(
+            checkpoint.findings[0].status,
+            FindingStatus::PendingConfirmation
+        );
+        // Tamper to Confirmed
+        checkpoint.findings[0].status = FindingStatus::Confirmed;
+        let error = ready(engine().scan_batch(
+            &scan_task,
+            &document,
+            &[r.clone()],
+            Some(checkpoint),
+            None,
+            0,
+        ))
+        .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("user boundary"));
+    }
+
+    // ── DS-12: unresolved_candidates integrity ──
+
+    #[test]
+    fn resume_rejects_unknown_or_duplicate_unresolved_candidates() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "身份尚未揭晓")],
+        );
+        let scan_task = task(&document.id);
+        let engine = ScanEngine::new(
+            Arc::new(PendingEvidenceProvider),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let base = ready(engine.scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+
+        // unknown unresolved candidate
+        let mut cp = base.clone();
+        cp.context
+            .unresolved_candidates
+            .push("finding_unknown".into());
+        let error = ready(engine.scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("unknown unresolved candidate"));
+
+        // duplicate unresolved candidate
+        let mut cp = base.clone();
+        let existing = cp.context.unresolved_candidates[0].clone();
+        cp.context.unresolved_candidates.push(existing);
+        let error = ready(engine.scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("duplicate unresolved candidate"));
+    }
+
+    #[test]
+    fn resume_rejects_missing_or_resolved_unresolved_candidate() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "身份尚未揭晓")],
+        );
+        let scan_task = task(&document.id);
+        let engine = ScanEngine::new(
+            Arc::new(PendingEvidenceProvider),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let base = ready(engine.scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+
+        // missing from unresolved_candidates
+        let mut cp = base.clone();
+        cp.context.unresolved_candidates.clear();
+        let error = ready(engine.scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("missing from unresolved candidates"));
+
+        // unresolved candidate pointing to Confirmed finding (use Local scope rule
+        // so the scope gate doesn't reject first)
+        let r_local = rule_with_scope(ConfirmationScope::Local);
+        let engine2 = ScanEngine::new(
+            Arc::new(PendingEvidenceProvider),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let mut cp2 =
+            ready(engine2.scan_batch(&scan_task, &document, &[r_local.clone()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        cp2.findings[0].status = FindingStatus::Confirmed;
+        let error =
+            ready(engine2.scan_batch(&scan_task, &document, &[r_local], Some(cp2), None, 0))
+                .unwrap_err();
+        // May be scope/boundary or unresolved status — both are ResumeMismatch
+        // We check for unresolved candidate status error
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        let msg = format!("{error}");
+        assert!(
+            msg.contains("suspected or pending_confirmation")
+                || msg.contains("unresolved candidate"),
+            "msg should mention status constraint: {msg}"
+        );
+    }
+
+    #[test]
+    fn resume_accepts_consistent_unresolved_candidates() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "身份尚未揭晓")],
+        );
+        let scan_task = task(&document.id);
+
+        // PendingConfirmation with unresolved
+        let engine = ScanEngine::new(
+            Arc::new(PendingEvidenceProvider),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let cp = ready(engine.scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+        assert!(!cp.context.unresolved_candidates.is_empty());
+        let resume =
+            ready(engine.scan_batch(&scan_task, &document, &[rule()], Some(cp.clone()), None, 0));
+        assert!(
+            resume.is_ok(),
+            "consistent PendingConfirmation should resume ok"
+        );
+
+        // Suspected without evidence but with unresolved
+        let engine2 = ScanEngine::new(
+            Arc::new(InvalidEvidenceProvider),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let cp2 = ready(engine2.scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+        assert!(!cp2.context.unresolved_candidates.is_empty());
+        assert_eq!(cp2.findings[0].status, FindingStatus::Suspected);
+        let resume =
+            ready(engine2.scan_batch(&scan_task, &document, &[rule()], Some(cp2.clone()), None, 0));
+        assert!(resume.is_ok(), "consistent Suspected should resume ok");
+        let resumed = &resume.unwrap().checkpoint;
+        assert!(!resumed.context.unresolved_candidates.is_empty());
+        assert!(resumed
+            .context
+            .unresolved_candidates
+            .contains(&resumed.findings[0].id));
     }
 }
