@@ -539,19 +539,32 @@ fn validate_checkpoint(
             "context snapshot does not match processed chapters".into(),
         ));
     }
-    validate_persisted_findings(&checkpoint.findings, document, rules, provider_id, model_id)?;
+    validate_persisted_findings(
+        &checkpoint.findings,
+        document,
+        &checkpoint.processed_chapters,
+        rules,
+        provider_id,
+        model_id,
+    )?;
     Ok(())
 }
 
 fn validate_persisted_findings(
     findings: &[Finding],
     document: &NovelDocument,
+    processed_chapters: &[ProcessedChapter],
     rules: &[RuleContext],
     provider_id: &str,
     model_id: &str,
 ) -> Result<(), ScanError> {
     let rule_by_id: HashMap<&str, &RuleContext> =
         rules.iter().map(|r| (r.id.as_str(), r)).collect();
+
+    let processed_chapter_ids: std::collections::HashSet<&str> = processed_chapters
+        .iter()
+        .map(|chapter| chapter.chapter_id.as_str())
+        .collect();
 
     let mut finding_ids = std::collections::HashSet::new();
 
@@ -607,6 +620,12 @@ fn validate_persisted_findings(
                 finding.id, finding.provider.model_id, model_id
             )));
         }
+        if !processed_chapter_ids.contains(finding.source.chapter_id.as_str()) {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' references unprocessed chapter '{}'",
+                finding.id, finding.source.chapter_id
+            )));
+        }
         let chapter = document
             .chapters
             .iter()
@@ -624,10 +643,14 @@ fn validate_persisted_findings(
                 finding.id
             )));
         }
-        if matches!(finding.status, FindingStatus::Confirmed) && finding.evidence.is_empty() {
+        if matches!(
+            finding.status,
+            FindingStatus::PendingConfirmation | FindingStatus::Confirmed
+        ) && finding.evidence.is_empty()
+        {
             return Err(ScanError::ResumeMismatch(format!(
-                "confirmed finding '{}' has no evidence",
-                finding.id
+                "finding '{}' status {:?} requires evidence but has none",
+                finding.id, finding.status
             )));
         }
         for anchor in &finding.evidence {
@@ -1571,5 +1594,124 @@ mod tests {
             .unwrap_err();
         assert!(matches!(error, ScanError::ResumeMismatch(_)));
         assert!(format!("{error}").contains("model_id"));
+    }
+
+    #[test]
+    fn resume_rejects_finding_from_unprocessed_chapter() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘"), chapter("c2", 1, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        // Scan only chapter 1
+        let mut checkpoint =
+            ready(engine().scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        // checkpoint.processed_chapters only has c1
+
+        // Rewrite finding to point to chapter 2 with matching evidence
+        let target = &document.chapters[1]; // c2
+        let target_text = target.text.clone();
+        let target_hash = stable_fingerprint(target_text.as_bytes());
+        let span = TextSpan::from_valid_range(&target.text, 0, target.text.len());
+        let quote = &target.text[span.utf8_byte_start..span.utf8_byte_end];
+
+        checkpoint.findings[0].source = ChapterRef::from_chapter(&document.id, target);
+        checkpoint.findings[0].evidence[0].source = ChapterRef::from_chapter(&document.id, target);
+        checkpoint.findings[0].evidence[0].chapter_content_hash = target_hash.clone();
+        checkpoint.findings[0].evidence[0].exact_quote = quote.to_owned();
+        checkpoint.findings[0].evidence[0].quote_hash = stable_fingerprint(quote.as_bytes());
+        checkpoint.findings[0].evidence[0].span = span;
+
+        let error =
+            ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(checkpoint), None, 0))
+                .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        let msg = format!("{error}");
+        assert!(
+            msg.contains("unprocessed chapter"),
+            "msg missing 'unprocessed chapter': {msg}"
+        );
+        assert!(msg.contains("c2"), "msg missing chapter id c2: {msg}");
+    }
+
+    #[test]
+    fn resume_rejects_confirmed_or_pending_without_evidence() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        let base = ready(engine().scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+
+        // Confirmed with empty evidence
+        let mut cp = base.clone();
+        cp.findings[0].status = FindingStatus::Confirmed;
+        cp.findings[0].evidence.clear();
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        let msg = format!("{error}");
+        assert!(msg.contains("Confirmed"), "msg missing 'Confirmed': {msg}");
+        assert!(msg.contains("evidence"), "msg missing 'evidence': {msg}");
+
+        // PendingConfirmation with empty evidence
+        let mut cp = base.clone();
+        cp.findings[0].status = FindingStatus::PendingConfirmation;
+        cp.findings[0].evidence.clear();
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        let msg = format!("{error}");
+        assert!(
+            msg.contains("PendingConfirmation"),
+            "msg missing 'PendingConfirmation': {msg}"
+        );
+        assert!(msg.contains("evidence"), "msg missing 'evidence': {msg}");
+    }
+
+    #[test]
+    fn resume_allows_suspected_without_evidence() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "没有对应原文")],
+        );
+        let scan_task = task(&document.id);
+        let engine = ScanEngine::new(
+            Arc::new(InvalidEvidenceProvider),
+            Arc::new(DeterministicContextCompressor::default()),
+        );
+        let checkpoint = ready(engine.scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+        let finding = &checkpoint.findings[0];
+        assert_eq!(finding.status, FindingStatus::Suspected);
+        assert!(finding.evidence.is_empty());
+
+        // Resume with same engine identity should succeed
+        let result = ready(engine.scan_batch(
+            &scan_task,
+            &document,
+            &[rule()],
+            Some(checkpoint.clone()),
+            None,
+            0,
+        ))
+        .unwrap();
+        let resumed = &result.checkpoint.findings[0];
+        assert_eq!(resumed.status, FindingStatus::Suspected);
+        assert!(resumed.evidence.is_empty());
     }
 }
