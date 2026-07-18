@@ -1,0 +1,168 @@
+/* ── 书架侧栏 ── */
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  height: 100%;
+}
+
+.sidebar-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.sidebar-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sidebar-badge {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
+  padding: 2px 8px;
+  border-radius: 10px;
+}
+
+/* 书籍列表 */
+.book-list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: var(--space-sm);
+}
+
+.book-card {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  padding: var(--space-md);
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background 0.15s;
+  border: 1px solid transparent;
+}
+
+.book-card:hover {
+  background: var(--color-primary-light);
+}
+
+.book-card--selected {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.book-card__main {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-sm);
+}
+
+.book-card__title {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: var(--color-text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.book-card__author {
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  white-space: nowrap;
+}
+
+.book-card__meta {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.book-card__format {
+  background: var(--color-surface-alt);
+  padding: 0 6px;
+  border-radius: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+}
+
+.book-card__status {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+}
+
+/* 状态圆点 */
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  flex-shrink: 0;
+}
+.status-dot--idle     { background: var(--color-text-muted); }
+.status-dot--scanning  { background: var(--color-info); animation: pulse 1.5s ease-in-out infinite; }
+.status-dot--scanned   { background: var(--color-accent); }
+.status-dot--error     { background: var(--color-danger); }
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+/* 进度条 */
+.book-card__progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+}
+
+.book-card__progress-bar {
+  flex: 1;
+  height: 4px;
+  background: var(--color-surface-alt);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.book-card__progress-fill {
+  height: 100%;
+  background: var(--color-info);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
+.book-card__progress-fill--paused {
+  background: var(--color-warning);
+}
+
+.book-card__progress-text {
+  font-size: 0.75rem;
+  color: var(--color-info);
+  white-space: nowrap;
+}
+
+.book-card__progress-text--paused {
+  color: var(--color-warning);
+}
+
+/* 底部 */
+.sidebar-footer {
+  padding: var(--space-sm) var(--space-lg);
+  border-top: 1px solid var(--color-border-light);
+}
+
+.sidebar-footer__text {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}

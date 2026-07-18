@@ -1,0 +1,131 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  frontend:
+    name: Frontend test and build (Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/client/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Run tests
+        run: npm test
+
+      - name: Build production client
+        run: npm run build
+
+  rulepack:
+    name: Validate rule packs (Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: packages/rulepack
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Validate schemas, provenance, and selections
+        run: npm run validate
+
+  migration:
+    name: Validate SQLite migration (Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    defaults:
+      run:
+        working-directory: apps/desktop
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Validate initial SQLite migration
+        run: npm run validate:migration
+
+  rust:
+    name: Rust workspace (Windows 2022 / MSVC)
+    # Pin the hosted VS 2022 image: it includes the MSVC C++ toolchain and
+    # Windows SDK required to compile Tauri. This job does not launch WebView2;
+    # a real Windows shell smoke test remains an S6 productization gate.
+    runs-on: windows-2022
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pinned Rust toolchain
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.97.1
+          components: rustfmt, clippy
+          cache: true
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Check all workspace targets
+        run: cargo check --workspace --all-targets
+
+      - name: Test all workspace targets
+        run: cargo test --workspace --all-targets
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            apps/client/package-lock.json
+            apps/desktop/package-lock.json
+
+      - name: Install desktop dependencies and verify Tauri
+        working-directory: apps/desktop
+        run: |
+          npm ci
+          npm run tauri -- --version
+
+      - name: Build client for Tauri (Windows verify)
+        working-directory: apps/client
+        run: |
+          npm ci
+          npm run build

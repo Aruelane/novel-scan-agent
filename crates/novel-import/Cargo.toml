@@ -1,0 +1,12 @@
+[package]
+name = "novel-import"
+version = "0.1.0"
+edition = "2021"
+description = "Format detection, capability reporting, and source-preserving novel import contracts"
+publish = false
+
+[lib]
+path = "src/lib.rs"
+
+[dependencies]
+

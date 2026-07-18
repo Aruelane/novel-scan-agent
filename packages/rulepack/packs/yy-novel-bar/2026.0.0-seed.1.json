@@ -1,0 +1,1025 @@
+{
+  "$schema": "../../schemas/rulepack.schema.json",
+  "schemaVersion": "1.0.0",
+  "id": "community.yy-novel-bar",
+  "version": "2026.0.0-seed.1",
+  "status": "seed",
+  "locale": "zh-CN",
+  "title": "YY小说吧雷点与郁闷点（2026 种子包）",
+  "description": "用于建立可验证、可选择、可追溯的规则包机制。当前仅少量术语得到观察，尚未完整核验的条目均默认关闭且明确标注为产品候选或占位。",
+  "releasedAt": "2026-07-17",
+  "supersedes": null,
+  "communityContext": {
+    "community": "百度贴吧·yy小说吧",
+    "scope": "面向该社区特定阅读偏好的小说扫雷与郁闷点提示，不作为作品客观质量评价。",
+    "disclaimer": "规则反映可选的社区阅读偏好；系统必须让用户逐条开关和覆写严重度，不得把模型推断或社区偏好表述为客观事实。",
+    "expectedCategoryCounts": {
+      "landmine": 11,
+      "frustration": 21
+    }
+  },
+  "sourceCatalog": [
+    {
+      "id": "tieba.post.10485825386",
+      "kind": "community_post",
+      "title": "用户指定的 2026 年规则帖（页面正文与标题仍待完整核验）",
+      "uri": "https://tieba.baidu.com/p/10485825386?fr=frs",
+      "accessedAt": "2026-07-17",
+      "verification": "metadata_only",
+      "note": "已知该来源用于雷点/郁闷点规则研究；当前抓取未可靠取得完整正文或图片内容，不能据此声称候选名称就是贴吧原文。"
+    },
+    {
+      "id": "project.requirement.2026-07-17",
+      "kind": "user_requirement",
+      "title": "项目需求与已确认设计上下文",
+      "accessedAt": "2026-07-17",
+      "verification": "partially_verified",
+      "note": "确认首版需容纳 11 类雷点、21 类郁闷点，且“接盘”概念可能跨两档；具体触发边界仍须回到社区原文逐条核验。"
+    }
+  ],
+  "severityLevels": [
+    {
+      "id": "critical",
+      "label": "致命",
+      "rank": 50,
+      "description": "用户通常希望立即停扫或显著警告。"
+    },
+    {
+      "id": "high",
+      "label": "高",
+      "rank": 40,
+      "description": "对阅读决定影响很大，但不必自动停止。"
+    },
+    {
+      "id": "medium",
+      "label": "中",
+      "rank": 30,
+      "description": "明显影响体验，适合在报告中突出显示。"
+    },
+    {
+      "id": "low",
+      "label": "低",
+      "rank": 20,
+      "description": "轻度不适或仅在特定读者边界下重要。"
+    },
+    {
+      "id": "info",
+      "label": "提示",
+      "rank": 10,
+      "description": "只做信息披露，不暗示负面评价。"
+    }
+  ],
+  "detectionProfiles": {
+    "strict-evidence-v1": {
+      "findingStates": ["suspected", "pending_confirmation", "confirmed", "rejected"],
+      "minEvidenceSnippets": 1,
+      "requiresSourceLocator": true,
+      "requiresOriginalTextCheck": true,
+      "rules": [
+        "confirmed 必须有可回到原文件的章节及段落、页码或行号定位。",
+        "传闻、角色误判、梦境、假设句、比喻和模型补全只能进入 suspected 或 pending_confirmation。",
+        "后文可能反转的关系事实在全书交叉核验前不得标为 confirmed。",
+        "报告需区分原文事实、模型推断和等待后文确认的线索。"
+      ]
+    }
+  },
+  "defaults": {
+    "unverifiedRulesEnabled": false,
+    "defaultFindingState": "suspected",
+    "duplicateConceptPolicy": "highest_user_selected_severity",
+    "categorySeverity": {
+      "landmine": "critical",
+      "frustration": "medium"
+    }
+  },
+  "rules": [
+    {
+      "id": "yy.thunder.accepting-prior-partner",
+      "conceptId": "relationship.accepting-prior-partner",
+      "version": 1,
+      "category": "landmine",
+      "name": "接盘（雷点档；定义待核验）",
+      "nameStatus": "observed_term_definition_unverified",
+      "aliases": ["接盘"],
+      "description": "“接盘”术语及跨档现象已在项目上下文中观察到，但雷点档的具体人物范围、关系史与行为阈值尚未按原帖核验。不得仅凭角色有过恋爱史自动判定。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["原文给出与目标角色既往或当前亲密关系有关的明确事实，且达到用户自定义的雷点档边界。"],
+        "exclusions": ["只有角色传闻、恶意造谣、误会或模型推测。", "仅凭角色存在普通社交或未落实的追求者。"],
+        "pendingConditions": ["关系事实尚未揭晓或后文可能澄清。", "用户未设置个人边界且社区原定义尚未核验。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "term_observed",
+        "sourceRefs": ["tieba.post.10485825386", "project.requirement.2026-07-17"],
+        "note": "术语可用于界面种子；定义在核验原帖前不得标成正式吧规。"
+      },
+      "tags": ["relationship", "community-term", "cross-category"]
+    },
+    {
+      "id": "yy.thunder.explicit-relationship-betrayal",
+      "conceptId": "relationship.explicit-betrayal",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 02：关系明确背叛",
+      "nameStatus": "product_draft",
+      "aliases": ["感情背叛", "关系背叛"],
+      "description": "产品候选：已建立排他或承诺关系的重要角色主动违背核心感情承诺。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["原文明确存在有效关系承诺。", "角色主动实施与该承诺冲突的感情或亲密行为。"],
+        "exclusions": ["关系尚未建立或双方明确允许该行为。", "行为只发生在梦境、幻境、表演或误认中且后文证伪。"],
+        "pendingConditions": ["承诺是否有效或行为是否自愿尚未揭晓。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待映射到经核验的社区条目。"
+      },
+      "tags": ["relationship", "betrayal", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.third-party-intimacy",
+      "conceptId": "relationship.third-party-intimacy",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 03：第三方亲密关系落实",
+      "nameStatus": "product_draft",
+      "aliases": ["第三方亲密", "关系被介入"],
+      "description": "产品候选：核心感情角色与第三方的亲密关系在剧情中被明确落实。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["原文明确给出第三方亲密行为或关系成立，而非只靠暗示推断。"],
+        "exclusions": ["亲属、医疗救助、礼仪或伪装行为被断章取义。", "所谓事实在后文被明确否定。"],
+        "pendingConditions": ["只有暧昧措辞、转述或场外黑屏，事实未确认。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待社区原定义核验。"
+      },
+      "tags": ["relationship", "third-party", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.sexual-violence-core-character",
+      "conceptId": "harm.sexual-violence-core-character",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 04：核心角色遭受性暴力",
+      "nameStatus": "product_draft",
+      "aliases": ["性暴力", "强迫亲密行为"],
+      "description": "产品候选：核心角色遭受明确的非自愿性行为或性暴力。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["原文显示行为缺乏有效同意，且行为已实际发生或明确开始实施。"],
+        "exclusions": ["只存在威胁但被阻止，且用户边界要求必须实际发生。", "角色扮演或双方同意情境被误读。"],
+        "pendingConditions": ["同意状态、行为是否发生或角色身份仍不明确。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选；输出应使用克制、非猎奇措辞。"
+      },
+      "tags": ["harm", "sexual-violence", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.forced-third-party-union",
+      "conceptId": "relationship.forced-third-party-union",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 05：被迫与第三方成婚或结合",
+      "nameStatus": "product_draft",
+      "aliases": ["强制婚配", "被迫结合"],
+      "description": "产品候选：核心感情角色被迫与第三方建立并落实婚姻或同等级关系。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["存在强制因素。", "婚姻或同等级关系已在剧情事实层面落实。"],
+        "exclusions": ["只有订婚安排、威胁或计划，随后在落实前解除。", "为破局而进行的短时伪装且原文明确未成立。"],
+        "pendingConditions": ["仪式或关系是否生效要到后文才揭晓。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待社区原定义核验。"
+      },
+      "tags": ["relationship", "coercion", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.voluntary-affection-transfer",
+      "conceptId": "relationship.voluntary-affection-transfer",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 06：核心感情转向第三方",
+      "nameStatus": "product_draft",
+      "aliases": ["移情", "转爱他人"],
+      "description": "产品候选：已作为核心感情对象的角色自愿、明确地把爱情转向第三方。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["原文明确确认感情性质和对象发生转移。"],
+        "exclusions": ["友谊、亲情、崇拜或策略性示好。", "角色被控制、洗脑或冒名，且后文恢复并否认。"],
+        "pendingConditions": ["只出现亲近行为而内心与关系性质未确认。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待社区原定义核验。"
+      },
+      "tags": ["relationship", "affection-transfer", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.protagonist-gives-up-partner",
+      "conceptId": "relationship.protagonist-gives-up-partner",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 07：主角主动让出核心感情对象",
+      "nameStatus": "product_draft",
+      "aliases": ["主动让出", "主动放弃感情对象"],
+      "description": "产品候选：主角在仍有有效感情关系时主动促成核心对象与第三方结合。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["主角具有明确主动意图。", "行为实际促成或认可第三方关系。"],
+        "exclusions": ["主角只是假意推动以保护或营救对方。", "双方已明确结束感情关系且用户边界不包含分手后情节。"],
+        "pendingConditions": ["主角真实动机或计划结果尚未揭晓。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，名称与边界均非社区原文。"
+      },
+      "tags": ["relationship", "protagonist-choice", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.paternity-or-identity-deception",
+      "conceptId": "relationship.paternity-or-identity-deception",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 08：亲子或伴侣身份重大欺骗",
+      "nameStatus": "product_draft",
+      "aliases": ["亲子欺骗", "伴侣身份欺骗"],
+      "description": "产品候选：围绕亲子关系或伴侣身份存在长期、已落实且直接影响核心关系的重大欺骗。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["身份或亲子事实被原文明确证实。", "欺骗直接改变核心关系的实质。"],
+        "exclusions": ["抱错、失忆或信息缺失中不存在主观欺骗。", "假线索在后文被否定。"],
+        "pendingConditions": ["只有血缘暗示、相似外貌或反派指控。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待社区原定义核验。"
+      },
+      "tags": ["relationship", "identity", "deception", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.core-partner-death",
+      "conceptId": "character.core-partner-death",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 09：核心感情角色不可逆死亡",
+      "nameStatus": "product_draft",
+      "aliases": ["女主死亡", "核心伴侣死亡"],
+      "description": "产品候选：被作品稳定定位为核心感情角色的人物不可逆死亡。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["角色的核心感情定位有原文依据。", "死亡在当前完整文本中被确认且没有复活或替身反转。"],
+        "exclusions": ["假死、失踪、分身死亡或可恢复状态。", "只在支线、梦境、模拟或未采用结局发生。"],
+        "pendingConditions": ["作品世界存在复活机制或正文尚未完结。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待社区原定义核验。"
+      },
+      "tags": ["character-death", "relationship", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.permanent-partner-loss",
+      "conceptId": "relationship.permanent-partner-loss",
+      "version": 1,
+      "category": "landmine",
+      "name": "候选雷点 10：核心感情角色永久失去",
+      "nameStatus": "product_draft",
+      "aliases": ["永久分离", "永久失去"],
+      "description": "产品候选：非死亡原因导致核心感情角色在结局中永久离开且关系无法恢复。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["永久性由结局、作者明确说明或不可逆设定支持。"],
+        "exclusions": ["阶段性离队、异地、封印或仍有明确重逢路径。"],
+        "pendingConditions": ["连载未完或后记、番外可能改变结局。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，等待社区原定义核验。"
+      },
+      "tags": ["relationship", "permanent-loss", "product-draft"]
+    },
+    {
+      "id": "yy.thunder.unmapped-slot-11",
+      "conceptId": "community.unmapped-thunder-11",
+      "version": 1,
+      "category": "landmine",
+      "name": "待核验雷点槽位 11",
+      "nameStatus": "placeholder",
+      "aliases": [],
+      "description": "为保持已知的 11 类结构而保留的禁用槽位；未取得原文前不参与自动判定。",
+      "status": "seed",
+      "defaultEnabled": false,
+      "defaultSeverity": "critical",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "manual_only",
+        "criteria": ["只有在人工核验社区原文并补齐定义后才能判定。"],
+        "exclusions": ["所有未经来源核验的模型猜测。"],
+        "pendingConditions": ["原始规则名称、定义或示例缺失。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["tieba.post.10485825386"],
+        "note": "纯占位，不代表贴吧存在同名条目。"
+      },
+      "tags": ["placeholder", "needs-source-review"]
+    },
+    {
+      "id": "yy.frustration.accepting-prior-partner",
+      "conceptId": "relationship.accepting-prior-partner",
+      "version": 1,
+      "category": "frustration",
+      "name": "接盘（郁闷点档；定义待核验）",
+      "nameStatus": "observed_term_definition_unverified",
+      "aliases": ["接盘"],
+      "description": "与雷点档共享概念，但用于较轻或边界不完整的情形；确切分档阈值尚待按社区原文核验。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["存在与目标角色既往关系有关的明确原文事实，并符合用户选择的郁闷点档边界。"],
+        "exclusions": ["只有传闻、误会、梦境或模型推测。", "用户明确将同一情形设为雷点档时不重复输出两条。"],
+        "pendingConditions": ["无法确定社区分档或用户个人边界。", "后文可能澄清既往关系事实。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "term_observed",
+        "sourceRefs": ["tieba.post.10485825386", "project.requirement.2026-07-17"],
+        "note": "通过 conceptId 与雷点档关联，输出层按用户选择去重。"
+      },
+      "tags": ["relationship", "community-term", "cross-category"]
+    },
+    {
+      "id": "yy.frustration.unresolved-suspicion",
+      "conceptId": "narrative.unresolved-relationship-suspicion",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 02：关系疑点长期不澄清",
+      "nameStatus": "product_draft",
+      "aliases": ["疑似雷不澄清", "关系悬念拖延"],
+      "description": "产品候选：作品长期制造可能触发关系雷点的暗示，却迟迟不给出可验证结论。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["同一关系疑点跨越多个章节反复出现且影响核心阅读判断。"],
+        "exclusions": ["疑点在同章或紧邻章节得到清楚解释。"],
+        "pendingConditions": ["扫描范围尚未覆盖后续澄清章节。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "suspicion", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.past-relationship-repetition",
+      "conceptId": "relationship.past-relationship-repetition",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 03：反复描写既往感情",
+      "nameStatus": "product_draft",
+      "aliases": ["前任描写过多", "旧情反复"],
+      "description": "产品候选：与当前主线无必要关联的既往感情内容被反复强调并造成持续不适。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["既往关系内容在多个位置重复出现，且不是一次性背景交代。"],
+        "exclusions": ["内容对破案、身份或当前冲突有直接必要性。"],
+        "pendingConditions": ["尚无法判断重复内容是否承担后续关键作用。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "backstory", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.protagonist-excessive-naivety",
+      "conceptId": "character.protagonist-excessive-naivety",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 04：主角过度迟钝或轻信",
+      "nameStatus": "product_draft",
+      "aliases": ["主角弱智", "主角轻信", "主角迟钝"],
+      "description": "产品候选：主角在已有充分信息和能力的情况下持续作出缺乏基本判断的决定。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["文本已给主角足够信息与理解能力。", "明显错误判断重复出现并推动冲突。"],
+        "exclusions": ["角色确实缺少信息、受到欺骗能力影响或错误符合既定性格。"],
+        "pendingConditions": ["看似错误的决定可能是未揭露计划。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选；避免仅因一次失误贴标签。"
+      },
+      "tags": ["protagonist", "decision", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.protagonist-boundary-weakness",
+      "conceptId": "character.protagonist-boundary-weakness",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 05：主角关系边界反复退让",
+      "nameStatus": "product_draft",
+      "aliases": ["关系边界弱", "反复退让"],
+      "description": "产品候选：主角面对反复越界行为长期不表达或维护已经明确的关系底线。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["边界已由原文明确。", "越界与退让重复发生且没有策略性理由。"],
+        "exclusions": ["主角处于现实威胁、能力不足或暂时隐忍的计划中。"],
+        "pendingConditions": ["主角是否会在后续反制尚未揭晓。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["protagonist", "relationship", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.humiliation-without-response",
+      "conceptId": "conflict.humiliation-without-response",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 06：受辱后长期无回应",
+      "nameStatus": "product_draft",
+      "aliases": ["受辱不反击", "憋屈"],
+      "description": "产品候选：主角或核心角色遭受显著羞辱后，剧情长期不给出合理回应或后果。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["羞辱在文本中明确发生。", "跨越用户设定篇幅仍无回应、成长或合理解释。"],
+        "exclusions": ["角色当场或随后以符合其能力的方式回应。"],
+        "pendingConditions": ["复仇或回应线仍在推进中。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["conflict", "humiliation", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.forced-misunderstanding",
+      "conceptId": "plot.forced-misunderstanding",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 07：强行误会推动剧情",
+      "nameStatus": "product_draft",
+      "aliases": ["强行误会", "不沟通误会"],
+      "description": "产品候选：角色在可轻易沟通且无合理阻碍时拒绝核实，使误会被机械延长。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["误会是主要冲突来源。", "角色具备沟通机会却多次无合理理由地回避核实。"],
+        "exclusions": ["存在保密义务、生命威胁、信息封锁或可信的心理障碍。"],
+        "pendingConditions": ["阻碍沟通的真实原因尚未揭晓。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["plot", "misunderstanding", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.prolonged-romance-stall",
+      "conceptId": "relationship.prolonged-romance-stall",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 08：感情线长期原地踏步",
+      "nameStatus": "product_draft",
+      "aliases": ["感情拖拉", "长期暧昧"],
+      "description": "产品候选：主要感情线反复重置或长期没有实质进展。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["多个推进机会后关系状态仍被反复重置。"],
+        "exclusions": ["作品明确采用慢热结构且每阶段都有可验证的关系变化。"],
+        "pendingConditions": ["扫描篇幅不足以判断长期节奏。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "pacing", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.core-partner-low-presence",
+      "conceptId": "character.core-partner-low-presence",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 09：核心感情角色戏份过低",
+      "nameStatus": "product_draft",
+      "aliases": ["女主戏份少", "核心角色掉线"],
+      "description": "产品候选：已建立核心定位的感情角色在较长篇幅内缺席，且缺席不服务于明确叙事目的。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["角色的核心定位有文本依据。", "缺席长度超过用户阈值且缺少独立进展。"],
+        "exclusions": ["群像轮换、分线叙事或阶段任务造成的合理离场。"],
+        "pendingConditions": ["角色后续可能拥有独立篇章或集中回归。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["character", "presence", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.omitted-romantic-target",
+      "conceptId": "relationship.omitted-romantic-target",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 10：重要感情对象被遗漏",
+      "nameStatus": "product_draft",
+      "aliases": ["漏女", "感情对象被遗忘"],
+      "description": "产品候选：作品曾明确建立感情承诺或重要定位，后续却无交代地让该角色从关系线消失。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["前文存在明确感情定位。", "结局或大段后文没有状态交代。"],
+        "exclusions": ["角色关系已明确结束、死亡或在番外得到交代。"],
+        "pendingConditions": ["正文未完结或番外未纳入扫描。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "continuity", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.unfulfilled-harem-promise",
+      "conceptId": "relationship.unfulfilled-harem-promise",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 11：感情路线承诺未兑现",
+      "nameStatus": "product_draft",
+      "aliases": ["后宫承诺未兑现", "路线欺诈"],
+      "description": "产品候选：文本或作者在作品内建立明确的多线感情预期，最终无合理交代地取消。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["预期由正文中的明确关系承诺支持，而非读者单方面配对。", "结局取消时缺少文本内解释。"],
+        "exclusions": ["人物关系自然发展后合理结束。", "只来自站外营销且未进入作品文本。"],
+        "pendingConditions": ["作品未完结或关系线仍在推进。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "expectation", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.side-character-steals-focus",
+      "conceptId": "narrative.side-character-steals-focus",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 12：配角长期挤占主线",
+      "nameStatus": "product_draft",
+      "aliases": ["配角抢戏", "主角边缘化"],
+      "description": "产品候选：非群像作品中，配角支线长期挤占篇幅并让主角目标停滞。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["作品主角与主线目标可明确识别。", "配角支线跨越用户阈值且主线无实质进展。"],
+        "exclusions": ["作品明确采用群像结构或配角线直接完成主线必要任务。"],
+        "pendingConditions": ["配角线与主线的汇合点尚未出现。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["narrative", "side-character", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.repeated-villain-escape",
+      "conceptId": "plot.repeated-villain-escape",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 13：反派重复脱身",
+      "nameStatus": "product_draft",
+      "aliases": ["反派反复逃脱", "养敌"],
+      "description": "产品候选：同一反派在缺乏新因果条件时多次依靠巧合逃脱，重复制造相似冲突。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["同一反派至少重复两次从已形成的失败局面脱身。", "脱身主要依靠未铺垫巧合或角色突然失误。"],
+        "exclusions": ["反派使用已铺垫的能力、资源或盟友。"],
+        "pendingConditions": ["脱身原因可能在后续补充。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["plot", "villain", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.power-scaling-inconsistency",
+      "conceptId": "continuity.power-scaling-inconsistency",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 14：战力或能力规则失稳",
+      "nameStatus": "product_draft",
+      "aliases": ["战力崩坏", "能力规则矛盾"],
+      "description": "产品候选：角色能力或战力规则在没有新条件时与已确立事实明显冲突。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["前后存在可引用的同类能力事实。", "环境、状态、克制或成长无法解释差异。"],
+        "exclusions": ["差异由伤势、装备、克制、规则区域或隐藏能力解释。"],
+        "pendingConditions": ["新能力或限制尚未完整揭晓。"],
+        "confirmationScope": "cross_chapter",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["continuity", "power-scaling", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.continuity-retcon",
+      "conceptId": "continuity.unexplained-retcon",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 15：设定无解释改写",
+      "nameStatus": "product_draft",
+      "aliases": ["设定吃书", "前后矛盾"],
+      "description": "产品候选：后文在没有可靠解释时直接否定前文明确建立的世界观或人物事实。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["前后矛盾双方均有明确原文证据。", "叙事视角误差、角色撒谎或新发现不能解释矛盾。"],
+        "exclusions": ["前文只是角色认知、传说或不可靠叙述。"],
+        "pendingConditions": ["作品可能在后续解释规则变化。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": false
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["continuity", "retcon", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.excessive-filler",
+      "conceptId": "pacing.excessive-filler",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 16：重复注水拖慢进度",
+      "nameStatus": "product_draft",
+      "aliases": ["水文", "剧情拖沓"],
+      "description": "产品候选：信息、冲突或对白大段重复，且对人物、设定与事件均无新增贡献。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["多个段落或章节高度重复已有信息。", "重复内容没有形成新的后果或视角价值。"],
+        "exclusions": ["刻意复沓具有明确悬念、主题或多视角功能。"],
+        "pendingConditions": ["尚未看到重复信息是否会形成后续伏笔。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["pacing", "repetition", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.excessive-protagonist-abuse",
+      "conceptId": "tone.excessive-protagonist-abuse",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 17：连续虐主缺少回报",
+      "nameStatus": "product_draft",
+      "aliases": ["虐主", "连续压抑"],
+      "description": "产品候选：主角连续承受重大损失或压制，而篇幅内缺少成长、反转或情绪回报。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["负面事件连续发生并超过用户设定篇幅。", "事件没有对应成长、解决或阶段性回报。"],
+        "exclusions": ["作品类型明确为悲剧且用户允许。", "压制阶段短且紧接有效反击。"],
+        "pendingConditions": ["回报点可能位于尚未扫描的后续章节。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["tone", "protagonist", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.prolonged-separation",
+      "conceptId": "relationship.prolonged-separation",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 18：重要角色长期分离",
+      "nameStatus": "product_draft",
+      "aliases": ["长期分离", "长期失联"],
+      "description": "产品候选：已经建立的重要人物关系因剧情安排长期中断互动。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["关系重要性有文本依据。", "无互动篇幅超过用户阈值。"],
+        "exclusions": ["双方各自支线均有推进且作品明确采用分线结构。"],
+        "pendingConditions": ["重逢节点尚未进入扫描范围。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "separation", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.ambiguous-relationship-status",
+      "conceptId": "relationship.ambiguous-status",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 19：关系状态长期含混",
+      "nameStatus": "product_draft",
+      "aliases": ["关系不明", "名分含混"],
+      "description": "产品候选：核心人物已有大量亲密互动，但作品长期回避说明双方关系和承诺。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["亲密互动与关系问题跨越多个章节。", "关系状态直接影响读者判断且文本持续回避。"],
+        "exclusions": ["无标签关系是双方明确选择且边界清楚。"],
+        "pendingConditions": ["关系确认节点可能尚未到达。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，非社区原文名称。"
+      },
+      "tags": ["relationship", "ambiguity", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.abrupt-or-open-ending",
+      "conceptId": "ending.abrupt-or-open",
+      "version": 1,
+      "category": "frustration",
+      "name": "候选郁闷点 20：关键关系或主线结局缺失",
+      "nameStatus": "product_draft",
+      "aliases": ["烂尾", "开放式结局", "结局缺交代"],
+      "description": "产品候选：完结文本未交代已经建立的核心冲突或关键关系状态。非贴吧原文名称。",
+      "status": "draft",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "semantic",
+        "criteria": ["文件可确认是完整完结版本。", "至少一个核心问题没有结论、去向或有意开放的文本信号。"],
+        "exclusions": ["缺失源于导入文件不完整。", "开放结局已完成主题闭环且用户允许。"],
+        "pendingConditions": ["无法确认作品是否完结、是否存在后记或番外。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["project.requirement.2026-07-17"],
+        "note": "产品候选，必须先排除文件缺章。"
+      },
+      "tags": ["ending", "completeness", "product-draft"]
+    },
+    {
+      "id": "yy.frustration.unmapped-slot-21",
+      "conceptId": "community.unmapped-frustration-21",
+      "version": 1,
+      "category": "frustration",
+      "name": "待核验郁闷点槽位 21",
+      "nameStatus": "placeholder",
+      "aliases": [],
+      "description": "为保持已知的 21 类结构而保留的禁用槽位；未取得原文前不参与自动判定。",
+      "status": "seed",
+      "defaultEnabled": false,
+      "defaultSeverity": "medium",
+      "userConfig": { "toggleable": true, "severityOverride": true, "customBoundaryAllowed": true },
+      "detection": {
+        "profileRef": "strict-evidence-v1",
+        "mode": "manual_only",
+        "criteria": ["只有在人工核验社区原文并补齐定义后才能判定。"],
+        "exclusions": ["所有未经来源核验的模型猜测。"],
+        "pendingConditions": ["原始规则名称、定义或示例缺失。"],
+        "confirmationScope": "whole_book",
+        "requiresUserBoundary": true
+      },
+      "provenance": {
+        "verification": "unverified",
+        "sourceRefs": ["tieba.post.10485825386"],
+        "note": "纯占位，不代表贴吧存在同名条目。"
+      },
+      "tags": ["placeholder", "needs-source-review"]
+    }
+  ]
+}

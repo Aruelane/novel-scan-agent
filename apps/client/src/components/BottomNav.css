@@ -1,0 +1,46 @@
+/* ── 移动端底部导航 ── */
+
+.bottom-nav {
+  display: none; /* 桌面三栏端隐藏 */
+}
+
+/* <= 1099px: single-panel mode with bottom nav */
+@media (max-width: 1099px) {
+  .bottom-nav {
+    display: flex;
+    height: 56px;
+    background: var(--color-surface);
+    border-top: 1px solid var(--color-border-light);
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+  }
+
+  .bottom-nav__btn {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    padding: var(--space-xs) 0;
+    color: var(--color-text-muted);
+    transition: color 0.15s;
+  }
+
+  .bottom-nav__btn--active {
+    color: var(--color-primary);
+  }
+
+  .bottom-nav__icon {
+    width: 22px;
+    height: 22px;
+  }
+
+  .bottom-nav__label {
+    font-size: 0.68rem;
+    font-weight: 500;
+  }
+}

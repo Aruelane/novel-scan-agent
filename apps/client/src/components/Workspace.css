@@ -1,0 +1,48 @@
+/* ── 主工作区 ── */
+
+.workspace {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-bg);
+  height: 100%;
+}
+
+/* 标签导航 */
+.workspace-tabs {
+  display: flex;
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-surface);
+  padding: 0 var(--space-md);
+  flex-shrink: 0;
+}
+
+.workspace-tab {
+  padding: var(--space-sm) var(--space-lg);
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  border-bottom: 2px solid transparent;
+  transition: color 0.15s, border-color 0.15s;
+  position: relative;
+  top: 1px;
+}
+
+.workspace-tab:hover {
+  color: var(--color-text);
+}
+
+.workspace-tab--active {
+  color: var(--color-primary);
+  border-bottom-color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 内容区 */
+.workspace-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--space-lg);
+}
+
+.workspace-content[hidden] {
+  display: none;
+}

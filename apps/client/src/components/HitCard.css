@@ -1,0 +1,152 @@
+/* ── 命中卡片 ── */
+
+.hit-card {
+  padding: var(--space-md);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-sm);
+  transition: border-color 0.2s, opacity 0.2s;
+}
+
+.hit-card--confirmed {
+  border-color: var(--color-danger-light);
+}
+
+.hit-card--false {
+  opacity: 0.5;
+}
+
+.hit-card__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.hit-card__rule-name {
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: var(--color-danger);
+}
+
+.hit-card__confidence {
+  font-size: 0.7rem;
+  padding: 1px 8px;
+  border-radius: 8px;
+  font-weight: 500;
+}
+
+.hit-card__confidence--high   { background: var(--color-danger-light); color: var(--color-danger); }
+.hit-card__confidence--medium { background: var(--color-warning-light); color: var(--color-warning); }
+.hit-card__confidence--low    { background: var(--color-info-light); color: var(--color-info); }
+
+/* 位置 */
+.hit-card__location {
+  display: flex;
+  gap: var(--space-sm);
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--space-sm);
+}
+
+.hit-card__chapter {
+  font-weight: 500;
+}
+
+.hit-card__position::before {
+  content: '·';
+  margin-right: var(--space-sm);
+}
+
+/* 原文摘录 */
+.hit-card__excerpt {
+  background: var(--color-surface-alt);
+  border-left: 3px solid var(--color-primary);
+  padding: var(--space-sm) var(--space-md);
+  font-size: 0.85rem;
+  line-height: 1.7;
+  color: var(--color-text);
+  margin-bottom: var(--space-sm);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+}
+
+.hit-card__excerpt-label {
+  font-weight: 600;
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  display: block;
+  margin-bottom: 2px;
+}
+
+/* AI 理由 */
+.hit-card__reason {
+  margin-bottom: var(--space-sm);
+}
+
+.hit-card__reason-summary {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.hit-card__reason-text {
+  margin-top: var(--space-xs);
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+  line-height: 1.6;
+  padding: var(--space-sm);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-sm);
+}
+
+/* 操作按钮 */
+.hit-card__actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.hit-card__review-btns {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.hit-card__btn {
+  padding: 4px 14px;
+  font-size: 0.78rem;
+  border-radius: var(--radius-sm);
+  font-weight: 500;
+  transition: background 0.15s;
+}
+
+.hit-card__btn--confirm {
+  background: var(--color-accent);
+  color: white;
+}
+.hit-card__btn--confirm:hover {
+  background: #4a7a49;
+}
+
+.hit-card__btn--false {
+  background: var(--color-surface-alt);
+  color: var(--color-text-secondary);
+  border: 1px solid var(--color-border);
+}
+.hit-card__btn--false:hover {
+  background: var(--color-border-light);
+}
+
+.hit-card__review-status {
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.hit-card__review-status--confirmed {
+  color: var(--color-accent);
+}
+
+.hit-card__review-status--false {
+  color: var(--color-text-muted);
+}

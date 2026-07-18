@@ -1,0 +1,106 @@
+name: Android scaffold verification
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: android-scaffold-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  ANDROID_API_LEVEL: "36"
+  ANDROID_BUILD_TOOLS: "36.0.0"
+  ANDROID_NDK_VERSION: "29.0.14206865"
+
+jobs:
+  android-debug:
+    name: Prepare scaffold and build aarch64 debug APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Verify Android project inputs
+        shell: bash
+        run: |
+          test -f apps/desktop/package.json || { echo "Missing apps/desktop/package.json"; exit 1; }
+          test -f apps/desktop/package-lock.json || { echo "Missing apps/desktop/package-lock.json"; exit 1; }
+          test -f apps/client/package-lock.json || { echo "Missing apps/client/package-lock.json"; exit 1; }
+          if [[ ! -f apps/desktop/src-tauri/tauri.conf.json && ! -f apps/desktop/src-tauri/tauri.conf.json5 ]]; then
+            echo "Missing Tauri configuration under apps/desktop/src-tauri"
+            exit 1
+          fi
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: |
+            apps/client/package-lock.json
+            apps/desktop/package-lock.json
+
+      - name: Install client dependencies
+        working-directory: apps/client
+        run: npm ci
+
+      - name: Install Tauri CLI dependencies
+        working-directory: apps/desktop
+        run: npm ci
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Android command-line tools
+        uses: android-actions/setup-android@v4
+        with:
+          packages: "platform-tools platforms;android-36 build-tools;36.0.0 ndk;29.0.14206865"
+
+      - name: Set NDK_HOME
+        shell: bash
+        run: echo "NDK_HOME=${ANDROID_HOME}/ndk/${ANDROID_NDK_VERSION}" >> "${GITHUB_ENV}"
+
+      - name: Set up pinned Rust toolchain and Android target
+        uses: actions-rust-lang/setup-rust-toolchain@v1
+        with:
+          toolchain: 1.97.1
+          target: aarch64-linux-android
+          cache: true
+
+      - name: Set up Gradle cache
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Use committed scaffold or generate an ephemeral one
+        working-directory: apps/desktop
+        shell: bash
+        run: |
+          if [[ -f src-tauri/gen/android/gradlew ]]; then
+            echo "Using the Android scaffold committed to this revision."
+          else
+            echo "No committed Android scaffold; generating a temporary CI scaffold."
+            npm run tauri -- android init --ci --skip-targets-install
+          fi
+          test -f src-tauri/gen/android/gradlew || {
+            echo "Tauri Android initialization did not create gradlew."
+            exit 1
+          }
+          chmod +x src-tauri/gen/android/gradlew
+
+      - name: Build debug APK
+        working-directory: apps/desktop
+        run: npm run tauri -- android build --ci --debug --target aarch64
+
+      - name: Upload debug APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: novel-scout-android-aarch64-debug
+          path: apps/desktop/src-tauri/gen/android/app/build/outputs/apk/**/*.apk
+          if-no-files-found: error
+          retention-days: 7

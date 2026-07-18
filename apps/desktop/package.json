@@ -1,0 +1,21 @@
+{
+  "name": "novel-scout-desktop",
+  "private": true,
+  "version": "0.1.0",
+  "scripts": {
+    "tauri": "node ./node_modules/@tauri-apps/cli/tauri.js",
+    "dev": "node ./node_modules/@tauri-apps/cli/tauri.js dev",
+    "build": "node ./node_modules/@tauri-apps/cli/tauri.js build",
+    "android:init": "node ./node_modules/@tauri-apps/cli/tauri.js android init",
+    "android:dev": "node ./node_modules/@tauri-apps/cli/tauri.js android dev",
+    "android:build": "node ./node_modules/@tauri-apps/cli/tauri.js android build",
+    "icons": "node ./scripts/generate-icons.mjs",
+    "client:dev": "node ./scripts/frontend.mjs dev",
+    "client:build": "node ./scripts/frontend.mjs build",
+    "validate:migration": "node ./scripts/validate-migration.mjs",
+    "validate:capability": "node ./scripts/validate-capability.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4"
+  }
+}

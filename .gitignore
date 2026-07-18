@@ -1,0 +1,29 @@
+# Project-local toolchains and build caches
+.toolchain/
+target/
+**/target/
+**/node_modules/
+**/dist/
+**/*.tsbuildinfo
+
+# Tauri regenerates ACL schemas; the Android scaffold itself is reviewed and
+# committed once `tauri android init` has been run.
+apps/desktop/src-tauri/gen/schemas/
+
+# Runtime state and credentials
+.env
+.env.*
+!.env.example
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+
+# Editor and operating-system files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+Desktop.ini

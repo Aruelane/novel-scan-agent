@@ -1,0 +1,69 @@
+/* ── 证据面板 ── */
+
+.evidence-panel {
+  display: flex;
+  flex-direction: column;
+  background: var(--color-surface);
+  height: 100%;
+}
+
+.evidence-panel__header {
+  padding: var(--space-md) var(--space-lg);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.evidence-panel__title {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.evidence-panel__summary {
+  display: flex;
+  gap: var(--space-md);
+  font-size: 0.78rem;
+}
+
+.evidence-panel__count {
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.evidence-panel__detail {
+  color: var(--color-text-secondary);
+}
+
+/* 空状态 */
+.evidence-panel__empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-sm);
+  padding: var(--space-xl);
+  color: var(--color-text-muted);
+  text-align: center;
+  font-size: 0.85rem;
+}
+
+.evidence-panel__empty-icon {
+  color: var(--color-border);
+}
+
+/* 命中列表 */
+.evidence-panel__list {
+  flex: 1;
+  overflow-y: auto;
+  list-style: none;
+  padding: var(--space-sm);
+}
+
+/* 底部提示 */
+.evidence-panel__footer {
+  padding: var(--space-sm) var(--space-lg);
+  border-top: 1px solid var(--color-border-light);
+  font-size: 0.72rem;
+  color: var(--color-text-muted);
+  text-align: center;
+}

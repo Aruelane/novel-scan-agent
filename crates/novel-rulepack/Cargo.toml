@@ -1,0 +1,11 @@
+[package]
+name = "novel-rulepack"
+version = "0.1.0"
+edition = "2021"
+description = "Deserializes versioned community rule packs and maps them into novel-core domain types"
+publish = false
+
+[dependencies]
+novel-core = { path = "../novel-core" }
+serde = { version = "1.0", features = ["derive"] }
+serde_json = "1.0"

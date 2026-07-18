@@ -1,0 +1,39 @@
+[
+  {
+    "label": "illegal category 'thunder'",
+    "patch": { "category": "thunder" },
+    "expectedPath": "/rules/0/category",
+    "expectedKeyword": "enum"
+  },
+  {
+    "label": "missing rule.version",
+    "patch": { "version": null },
+    "expectedPath": "/rules/0",
+    "expectedKeyword": "required",
+    "expectedMissing": "version"
+  },
+  {
+    "label": "version as string instead of integer",
+    "patch": { "version": "1" },
+    "expectedPath": "/rules/0/version",
+    "expectedKeyword": "type"
+  },
+  {
+    "label": "additional property on rule",
+    "patch": { "madeUpField": true },
+    "expectedPath": "/rules/0",
+    "expectedKeyword": "additionalProperties"
+  },
+  {
+    "label": "illegal confirmationScope 'global'",
+    "patch": { "detection": { "confirmationScope": "global" } },
+    "expectedPath": "/rules/0/detection/confirmationScope",
+    "expectedKeyword": "enum"
+  },
+  {
+    "label": "version less than 1",
+    "patch": { "version": 0 },
+    "expectedPath": "/rules/0/version",
+    "expectedKeyword": "minimum"
+  }
+]

@@ -1,0 +1,394 @@
+/* ── 扫描进度面板 ── */
+
+.scan-progress {
+  max-width: 720px;
+}
+
+/* 空状态 */
+.scan-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: var(--space-xl) 0;
+  gap: var(--space-sm);
+}
+
+.scan-empty__icon {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-sm);
+}
+
+.scan-empty__title {
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+
+.scan-empty__desc {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+}
+
+/* 闲置状态（有书无任务） */
+.scan-idle {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+.scan-idle__title {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.scan-idle__author {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+}
+
+.scan-idle__meta {
+  font-size: 0.8rem;
+  color: var(--color-text-muted);
+}
+
+.scan-idle__desc {
+  color: var(--color-text-secondary);
+  font-size: 0.9rem;
+  margin-top: var(--space-sm);
+}
+
+.scan-start-btn {
+  align-self: flex-start;
+  margin-top: var(--space-md);
+  padding: var(--space-sm) var(--space-lg);
+  background: var(--color-primary);
+  color: white;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+}
+
+.scan-start-btn:disabled {
+  background: var(--color-border);
+  color: var(--color-text-muted);
+}
+
+/* 扫描中 */
+.scan-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--space-lg);
+}
+
+.scan-header__title {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.scan-header__author {
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+}
+
+.scan-status-badge {
+  font-size: 0.75rem;
+  padding: 2px 10px;
+  border-radius: 10px;
+  font-weight: 500;
+  flex-shrink: 0;
+}
+
+.scan-status-badge--running   { background: var(--color-info-light); color: var(--color-info); }
+.scan-status-badge--paused    { background: var(--color-warning-light); color: var(--color-warning); }
+.scan-status-badge--completed { background: var(--color-accent-light); color: var(--color-accent); }
+.scan-status-badge--pending   { background: var(--color-surface-alt); color: var(--color-text-secondary); }
+
+/* 进度条 */
+.scan-bar-section {
+  display: flex;
+  align-items: center;
+  gap: var(--space-md);
+  margin-bottom: var(--space-lg);
+}
+
+.scan-bar {
+  flex: 1;
+  height: 10px;
+  background: var(--color-surface-alt);
+  border-radius: 5px;
+  overflow: hidden;
+}
+
+.scan-bar__fill {
+  height: 100%;
+  background: var(--color-info);
+  border-radius: 5px;
+  transition: width 0.4s ease;
+}
+
+.scan-bar__fill--paused {
+  background: var(--color-warning);
+}
+
+.scan-bar__fill--completed {
+  background: var(--color-accent);
+}
+
+.scan-bar__label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: var(--color-text);
+  min-width: 45px;
+  text-align: right;
+}
+
+/* 统计卡片 */
+.scan-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.scan-stat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-md);
+  padding: var(--space-sm) var(--space-md);
+  display: flex;
+  flex-direction: column;
+}
+
+.scan-stat__label {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.scan-stat__value {
+  font-size: 0.95rem;
+  font-weight: 600;
+}
+
+/* 压缩提示 */
+.scan-compression-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-info-light);
+  border-radius: var(--radius-md);
+  font-size: 0.8rem;
+  color: var(--color-info);
+  margin-bottom: var(--space-md);
+  line-height: 1.5;
+}
+
+.scan-compression-hint__icon {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  flex-shrink: 0;
+  margin-top: 1px;
+}
+
+/* 操作按钮 */
+.scan-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.scan-btn {
+  padding: var(--space-sm) var(--space-lg);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: background 0.15s, opacity 0.15s;
+}
+
+.scan-btn--pause {
+  background: var(--color-warning);
+  color: white;
+}
+.scan-btn--pause:hover {
+  background: #b3852e;
+}
+
+.scan-btn--resume {
+  background: var(--color-accent);
+  color: white;
+}
+.scan-btn--resume:hover {
+  background: #4a7a49;
+}
+
+/* 对话式扫描要求（第一阶段仅做前端交互） */
+.scan-conversation {
+  margin: var(--space-lg) 0 var(--space-md);
+  padding: var(--space-lg);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-sm);
+}
+
+.scan-conversation__heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--space-md);
+  margin-bottom: var(--space-md);
+}
+
+.scan-conversation__eyebrow {
+  color: var(--color-primary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  margin-bottom: 2px;
+}
+
+.scan-conversation__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.scan-conversation__demo-badge {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  color: var(--color-text-secondary);
+  background: var(--color-surface-alt);
+  border-radius: 10px;
+  font-size: 0.7rem;
+}
+
+.scan-conversation__messages {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.scan-message {
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  font-size: 0.86rem;
+  line-height: 1.65;
+}
+
+.scan-message--assistant {
+  align-self: flex-start;
+  background: var(--color-primary-light);
+  border-bottom-left-radius: 3px;
+}
+
+.scan-message--user {
+  align-self: flex-end;
+  background: var(--color-info-light);
+  border-bottom-right-radius: 3px;
+}
+
+.scan-message__speaker {
+  display: block;
+  margin-bottom: 2px;
+  color: var(--color-text-secondary);
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.scan-conversation__suggestions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: var(--space-sm);
+}
+
+.scan-conversation__suggestion {
+  padding: 5px 10px;
+  color: var(--color-primary);
+  background: var(--color-bg);
+  border: 1px solid var(--color-primary-light);
+  border-radius: 14px;
+  font-size: 0.75rem;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+.scan-conversation__suggestion:hover {
+  background: var(--color-primary-light);
+  border-color: var(--color-primary);
+}
+
+.scan-command {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--space-sm);
+}
+
+.scan-command__input {
+  flex: 1;
+  min-width: 0;
+  resize: vertical;
+  padding: 9px 11px;
+  color: var(--color-text);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font: inherit;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
+.scan-command__input::placeholder {
+  color: var(--color-text-muted);
+}
+
+.scan-command__submit {
+  flex-shrink: 0;
+  padding: 9px 13px;
+  color: white;
+  background: var(--color-primary);
+  border-radius: var(--radius-md);
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.scan-command__submit:hover:not(:disabled) {
+  background: var(--color-primary-hover);
+}
+
+.scan-conversation__notice {
+  margin-top: var(--space-sm);
+  color: var(--color-text-muted);
+  font-size: 0.7rem;
+}
+
+/* 演示提示 */
+.scan-demo-hint {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-sm);
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface-alt);
+  border-radius: var(--radius-md);
+  font-size: 0.78rem;
+  color: var(--color-text-muted);
+}
+
+@media (max-width: 520px) {
+  .scan-conversation {
+    padding: var(--space-md);
+  }
+
+  .scan-command {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .scan-command__submit {
+    align-self: flex-end;
+  }
+
+  .scan-message {
+    max-width: 94%;
+  }
+}

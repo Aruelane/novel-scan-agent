@@ -1,0 +1,29 @@
+{
+  "$schema": "../schemas/rule-selection.schema.json",
+  "schemaVersion": "1.0.0",
+  "packId": "community.yy-novel-bar",
+  "packVersion": "2026.0.0-seed.1",
+  "pendingFindingPolicy": "show_above_confidence",
+  "pendingConfidenceThreshold": 0.72,
+  "duplicateConceptPolicy": "highest_user_selected_severity",
+  "overrides": [
+    {
+      "ruleId": "yy.thunder.accepting-prior-partner",
+      "enabled": true,
+      "severity": "critical",
+      "sensitivity": "strict",
+      "customBoundary": "只在原文明确达到我设置的关系事实边界时提示；模糊暗示保持待确认。"
+    },
+    {
+      "ruleId": "yy.frustration.accepting-prior-partner",
+      "enabled": false,
+      "note": "同一概念只按雷点档显示，避免重复报告。"
+    },
+    {
+      "ruleId": "yy.frustration.protagonist-excessive-naivety",
+      "enabled": true,
+      "severity": "low",
+      "sensitivity": "balanced"
+    }
+  ]
+}
