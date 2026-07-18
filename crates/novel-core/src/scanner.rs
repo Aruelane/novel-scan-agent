@@ -539,15 +539,74 @@ fn validate_checkpoint(
             "context snapshot does not match processed chapters".into(),
         ));
     }
-    validate_persisted_findings(&checkpoint.findings, document)?;
+    validate_persisted_findings(&checkpoint.findings, document, rules, provider_id, model_id)?;
     Ok(())
 }
 
 fn validate_persisted_findings(
     findings: &[Finding],
     document: &NovelDocument,
+    rules: &[RuleContext],
+    provider_id: &str,
+    model_id: &str,
 ) -> Result<(), ScanError> {
+    let rule_by_id: HashMap<&str, &RuleContext> =
+        rules.iter().map(|r| (r.id.as_str(), r)).collect();
+
+    let mut finding_ids = std::collections::HashSet::new();
+
     for finding in findings {
+        if !finding_ids.insert(finding.id.as_str()) {
+            return Err(ScanError::ResumeMismatch(format!(
+                "duplicate finding id '{}'",
+                finding.id
+            )));
+        }
+
+        if finding.confidence_bps > 10_000 {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' confidence_bps {} exceeds limit 10000",
+                finding.id, finding.confidence_bps
+            )));
+        }
+
+        let resolved = rule_by_id.get(finding.rule_id.as_str()).ok_or_else(|| {
+            ScanError::ResumeMismatch(format!(
+                "finding '{}' references unknown or unselected rule '{}'",
+                finding.id, finding.rule_id
+            ))
+        })?;
+
+        if finding.rule_version != resolved.version {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' rule_version {} does not match selected version {}",
+                finding.id, finding.rule_version, resolved.version
+            )));
+        }
+        if finding.category != resolved.category {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' category {:?} does not match selected {:?}",
+                finding.id, finding.category, resolved.category
+            )));
+        }
+        if finding.alert_level != resolved.alert_level {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' alert_level {:?} does not match selected {:?}",
+                finding.id, finding.alert_level, resolved.alert_level
+            )));
+        }
+        if finding.provider.provider_id != provider_id {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' provider_id '{}' does not match current '{}'",
+                finding.id, finding.provider.provider_id, provider_id
+            )));
+        }
+        if finding.provider.model_id != model_id {
+            return Err(ScanError::ResumeMismatch(format!(
+                "finding '{}' model_id '{}' does not match current '{}'",
+                finding.id, finding.provider.model_id, model_id
+            )));
+        }
         let chapter = document
             .chapters
             .iter()
@@ -1382,5 +1441,135 @@ mod tests {
             "error should mention conflicting candidates: {message}"
         );
         assert!(store.load(&scan_task.id).unwrap().is_none());
+    }
+
+    #[test]
+    fn resume_rejects_duplicate_finding_ids() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        let mut checkpoint =
+            ready(engine().scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        let dup = checkpoint.findings[0].clone();
+        checkpoint.findings.push(dup);
+
+        let error =
+            ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(checkpoint), None, 0))
+                .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("duplicate finding id"));
+    }
+
+    #[test]
+    fn resume_rejects_out_of_range_confidence() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        let mut checkpoint =
+            ready(engine().scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+                .unwrap()
+                .checkpoint;
+        checkpoint.findings[0].confidence_bps = 10_001;
+
+        let error =
+            ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(checkpoint), None, 0))
+                .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        let msg = format!("{error}");
+        assert!(
+            msg.contains("confidence_bps"),
+            "msg missing confidence_bps: {msg}"
+        );
+        assert!(msg.contains("10000"), "msg missing 10000: {msg}");
+    }
+
+    #[test]
+    fn resume_rejects_tampered_rule_snapshot() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        let base = ready(engine().scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+
+        // unknown rule_id
+        let mut cp = base.clone();
+        cp.findings[0].rule_id = "nonexistent".into();
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("nonexistent"));
+
+        // wrong rule_version
+        let mut cp = base.clone();
+        cp.findings[0].rule_version = 999;
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("rule_version"));
+
+        // wrong category
+        let mut cp = base.clone();
+        cp.findings[0].category = RuleCategory::Landmine;
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("category"));
+
+        // wrong alert_level
+        let mut cp = base.clone();
+        cp.findings[0].alert_level = AlertLevel::Info;
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("alert_level"));
+    }
+
+    #[test]
+    fn resume_rejects_tampered_provider_stamp() {
+        let document = NovelDocument::new(
+            "book-1",
+            "测试书",
+            "book.txt",
+            DocumentFormat::PlainText,
+            vec![chapter("c1", 0, "接盘")],
+        );
+        let scan_task = task(&document.id);
+        let base = ready(engine().scan_batch(&scan_task, &document, &[rule()], None, None, 1))
+            .unwrap()
+            .checkpoint;
+
+        // wrong provider_id
+        let mut cp = base.clone();
+        cp.findings[0].provider.provider_id = "other-provider".into();
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("provider_id"));
+
+        // wrong model_id
+        let mut cp = base.clone();
+        cp.findings[0].provider.model_id = "other-model".into();
+        let error = ready(engine().scan_batch(&scan_task, &document, &[rule()], Some(cp), None, 0))
+            .unwrap_err();
+        assert!(matches!(error, ScanError::ResumeMismatch(_)));
+        assert!(format!("{error}").contains("model_id"));
     }
 }
