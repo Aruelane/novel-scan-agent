@@ -313,7 +313,11 @@ db.exec(`
   VALUES ('test-ch-2', 'test-book-2', 0, 'Ch2', 'body text 2', 'deadbeef00000004', '{}', 11, 0)
 `);
 
-// Setup test scan_jobs WITH rule_pack snapshots
+// Setup test scan_jobs
+// test-job: NO checkpoint — used for rule selection / finding / evidence trigger tests
+// checkpoint-job: HAS checkpoint — used for checkpoint + immutability tests
+// test-job-2: NO checkpoint — used for illegal schema_version checkpoint tests
+
 test('scan_job INSERT with rule_pack snapshots succeeds', () => {
   if (!tryExec(
     `INSERT INTO scan_jobs (id, book_id, status, provider_kind_snapshot, model_id_snapshot, rule_pack_id_snapshot, rule_pack_version_snapshot, created_at_ms, updated_at_ms)
@@ -326,25 +330,36 @@ test('scan_job INSERT with rule_pack snapshots succeeds', () => {
 
 db.exec(`
   INSERT INTO scan_jobs (id, book_id, status, provider_kind_snapshot, model_id_snapshot, rule_pack_id_snapshot, rule_pack_version_snapshot, created_at_ms, updated_at_ms)
+  VALUES ('checkpoint-job', 'test-book', 'pending', 'openai', 'gpt-test', 'test-pack', '1.0', 0, 0)
+`);
+
+db.exec(`
+  INSERT INTO scan_jobs (id, book_id, status, provider_kind_snapshot, model_id_snapshot, rule_pack_id_snapshot, rule_pack_version_snapshot, created_at_ms, updated_at_ms)
   VALUES ('test-job-2', 'test-book-2', 'pending', 'openai', 'gpt-test', 'test-pack', '1.0', 0, 0)
 `);
 
+// checkpoint-job needs a rule_selection before checkpoint can be established
+db.exec(`
+  INSERT INTO rule_selections (scan_job_id, rule_id, rule_version, effective_category, alert_level, enabled)
+  VALUES ('checkpoint-job', 'locked-rule', 1, 'landmine', 'medium', 1)
+`);
+
 // ═══════════════════════════════════════════════════════════
-// Item 四: Checkpoint v2 round-trip tests
+// Item 四: Checkpoint v2 round-trip tests (using checkpoint-job)
 // ═══════════════════════════════════════════════════════════
 
 test('checkpoint: schema_version=2 with scan_profile_fingerprint succeeds', () => {
   if (!tryExec(
     `INSERT INTO checkpoints (scan_job_id, schema_version, document_fingerprint, scan_profile_fingerprint, next_chapter_position, processed_chapters_json, context_snapshot_json, updated_at_ms)
      VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-    'test-job', 2, 'docfp-001', 'profilefp-001', 0, '[]', '{}', 1000
+    'checkpoint-job', 2, 'docfp-001', 'profilefp-001', 0, '[]', '{}', 1000
   )) {
     throw new Error('checkpoint v2 insert failed');
   }
 });
 
 test('checkpoint: read back verifies all fields', () => {
-  const row = db.prepare('SELECT * FROM checkpoints WHERE scan_job_id = ?').get('test-job');
+  const row = db.prepare('SELECT * FROM checkpoints WHERE scan_job_id = ?').get('checkpoint-job');
   if (!row) throw new Error('checkpoint not found');
   if (row.schema_version !== 2) throw new Error(`expected schema_version=2, got ${row.schema_version}`);
   if (row.document_fingerprint !== 'docfp-001') throw new Error('document_fingerprint mismatch');
@@ -384,12 +399,12 @@ test('checkpoint: empty scan_profile_fingerprint is REJECTED', () => {
 });
 
 // ═══════════════════════════════════════════════════════════
-// Item 四: scan_jobs immutability after checkpoint trigger
+// DS-14: scan_jobs immutability after checkpoint (using checkpoint-job)
 // ═══════════════════════════════════════════════════════════
 
 test('scan_jobs: cannot modify provider_kind_snapshot after checkpoint', () => {
   try {
-    db.exec("UPDATE scan_jobs SET provider_kind_snapshot = 'changed' WHERE id = 'test-job'");
+    db.exec("UPDATE scan_jobs SET provider_kind_snapshot = 'changed' WHERE id = 'checkpoint-job'");
     throw new Error('should have been rejected');
   } catch (e) {
     if (!e.message.includes('cannot modify scan_job fields after checkpoint exists')) {
@@ -398,10 +413,35 @@ test('scan_jobs: cannot modify provider_kind_snapshot after checkpoint', () => {
   }
 });
 
-test('scan_jobs: can modify current_chapter_position after checkpoint', () => {
-  // This field is NOT in the immutable list, so it should be updatable
+test('scan_jobs: cannot change book_id after checkpoint', () => {
   try {
-    db.exec("UPDATE scan_jobs SET total_chapters = 10, current_chapter_position = 5 WHERE id = 'test-job'");
+    db.exec("UPDATE scan_jobs SET book_id = 'test-book-2' WHERE id = 'checkpoint-job'");
+    throw new Error('should have been rejected');
+  } catch (e) {
+    if (!e.message.includes('cannot modify scan_job fields after checkpoint exists')) {
+      throw new Error(`wrong error message: ${e.message}`);
+    }
+  }
+});
+
+test('scan_jobs: cannot change provider_profile_id after checkpoint', () => {
+  // Insert a provider profile first
+  db.exec(`INSERT INTO provider_profiles (id, provider_kind, display_name, credential_ref, credential_state, created_at_ms, updated_at_ms)
+    VALUES ('lock-profile', 'openai', 'Lock Profile', NULL, 'missing', 0, 0)`);
+  try {
+    // checkpoint-job originally has NULL provider_profile_id
+    db.exec("UPDATE scan_jobs SET provider_profile_id = 'lock-profile' WHERE id = 'checkpoint-job'");
+    throw new Error('should have been rejected');
+  } catch (e) {
+    if (!e.message.includes('cannot modify scan_job fields after checkpoint exists')) {
+      throw new Error(`wrong error message: ${e.message}`);
+    }
+  }
+});
+
+test('scan_jobs: progress fields remain mutable after checkpoint', () => {
+  try {
+    db.exec("UPDATE scan_jobs SET total_chapters = 10, current_chapter_position = 5, status = 'running' WHERE id = 'checkpoint-job'");
   } catch (e) {
     throw new Error(`should have succeeded but got: ${e.message}`);
   }
@@ -797,6 +837,89 @@ test('evidence UPDATE: cross-book chapter rejected (trg_evidence_chapter_book_up
     if (!e.message.includes('evidence chapter must belong to same book as finding')) {
       throw new Error(`wrong error message: ${e.message}`);
     }
+  }
+});
+
+// ═══════════════════════════════════════════════════════════
+// DS-13: rule_selections frozen after checkpoint
+// ═══════════════════════════════════════════════════════════
+
+test('rule_selections INSERT after checkpoint is rejected', () => {
+  try {
+    db.exec(`INSERT INTO rule_selections (scan_job_id, rule_id, rule_version, effective_category, alert_level, enabled)
+      VALUES ('checkpoint-job', 'new-rule', 1, 'landmine', 'medium', 1)`);
+    throw new Error('should have been rejected');
+  } catch (e) {
+    if (!e.message.includes('cannot insert rule selection after checkpoint exists')) {
+      throw new Error(`wrong error message: ${e.message}`);
+    }
+  }
+});
+
+test('rule_selections UPDATE after checkpoint is rejected', () => {
+  try {
+    db.exec("UPDATE rule_selections SET alert_level = 'high' WHERE scan_job_id = 'checkpoint-job' AND rule_id = 'locked-rule'");
+    throw new Error('should have been rejected');
+  } catch (e) {
+    if (!e.message.includes('cannot update rule selection after checkpoint exists')) {
+      throw new Error(`wrong error message: ${e.message}`);
+    }
+  }
+  // Verify locked-rule is unchanged
+  const row = db.prepare("SELECT alert_level FROM rule_selections WHERE scan_job_id = ? AND rule_id = ?").get('checkpoint-job', 'locked-rule');
+  if (row.alert_level !== 'medium') throw new Error('locked-rule was modified');
+});
+
+test('rule_selections DELETE after checkpoint is rejected', () => {
+  try {
+    db.exec("DELETE FROM rule_selections WHERE scan_job_id = 'checkpoint-job' AND rule_id = 'locked-rule'");
+    throw new Error('should have been rejected');
+  } catch (e) {
+    if (!e.message.includes('cannot delete rule selection after checkpoint exists')) {
+      throw new Error(`wrong error message: ${e.message}`);
+    }
+  }
+  // Verify locked-rule still exists
+  const row = db.prepare("SELECT * FROM rule_selections WHERE scan_job_id = ? AND rule_id = ?").get('checkpoint-job', 'locked-rule');
+  if (!row) throw new Error('locked-rule was deleted');
+});
+
+// ═══════════════════════════════════════════════════════════
+// DS-14: checkpoint scan_job_id immutability
+// ═══════════════════════════════════════════════════════════
+
+test('checkpoint cannot move to another scan job', () => {
+  try {
+    db.exec("UPDATE checkpoints SET scan_job_id = 'test-job' WHERE scan_job_id = 'checkpoint-job'");
+    throw new Error('should have been rejected');
+  } catch (e) {
+    if (!e.message.includes('cannot reassign checkpoint to another scan job')) {
+      throw new Error(`wrong error message: ${e.message}`);
+    }
+  }
+  // checkpoint still belongs to checkpoint-job
+  const cp = db.prepare("SELECT * FROM checkpoints WHERE scan_job_id = ?").get('checkpoint-job');
+  if (!cp) throw new Error('checkpoint-job lost its checkpoint');
+  // test-job still has no checkpoint
+  const tj = db.prepare("SELECT COUNT(*) AS cnt FROM checkpoints WHERE scan_job_id = ?").get('test-job');
+  if (tj.cnt !== 0) throw new Error('test-job should not have a checkpoint');
+});
+
+// ═══════════════════════════════════════════════════════════
+// Integrity checks
+// ═══════════════════════════════════════════════════════════
+
+test('PRAGMA foreign_key_check is clean', () => {
+  const rows = db.prepare('PRAGMA foreign_key_check').all();
+  if (rows.length !== 0) {
+    throw new Error(`foreign_key_check violations: ${JSON.stringify(rows)}`);
+  }
+});
+
+test('PRAGMA integrity_check is ok', () => {
+  const rows = db.prepare('PRAGMA integrity_check').all();
+  if (rows.length !== 1 || rows[0].integrity_check !== 'ok') {
+    throw new Error(`integrity_check failed: ${JSON.stringify(rows)}`);
   }
 });
 

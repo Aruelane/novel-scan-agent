@@ -331,7 +331,37 @@ BEGIN
        OR NEW.rule_pack_id_snapshot != OLD.rule_pack_id_snapshot
        OR NEW.rule_pack_version_snapshot != OLD.rule_pack_version_snapshot
        OR NEW.context_budget_chars != OLD.context_budget_chars
-       OR NEW.retain_unverified_candidates != OLD.retain_unverified_candidates;
+       OR NEW.retain_unverified_candidates != OLD.retain_unverified_candidates
+       OR NEW.book_id IS NOT OLD.book_id
+       OR NEW.provider_profile_id IS NOT OLD.provider_profile_id;
+END;
+
+CREATE TRIGGER trg_rule_selections_no_insert_after_checkpoint
+BEFORE INSERT ON rule_selections
+WHEN EXISTS (SELECT 1 FROM checkpoints WHERE checkpoints.scan_job_id = NEW.scan_job_id)
+BEGIN
+    SELECT RAISE(ABORT, 'cannot insert rule selection after checkpoint exists');
+END;
+
+CREATE TRIGGER trg_rule_selections_no_update_after_checkpoint
+BEFORE UPDATE ON rule_selections
+WHEN EXISTS (SELECT 1 FROM checkpoints WHERE checkpoints.scan_job_id = OLD.scan_job_id)
+  OR EXISTS (SELECT 1 FROM checkpoints WHERE checkpoints.scan_job_id = NEW.scan_job_id)
+BEGIN
+    SELECT RAISE(ABORT, 'cannot update rule selection after checkpoint exists');
+END;
+
+CREATE TRIGGER trg_rule_selections_no_delete_after_checkpoint
+BEFORE DELETE ON rule_selections
+WHEN EXISTS (SELECT 1 FROM checkpoints WHERE checkpoints.scan_job_id = OLD.scan_job_id)
+BEGIN
+    SELECT RAISE(ABORT, 'cannot delete rule selection after checkpoint exists');
+END;
+
+CREATE TRIGGER trg_checkpoints_scan_job_id_immutable
+BEFORE UPDATE OF scan_job_id ON checkpoints
+BEGIN
+    SELECT RAISE(ABORT, 'cannot reassign checkpoint to another scan job');
 END;
 
 CREATE INDEX idx_provider_profiles_enabled
