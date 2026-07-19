@@ -51,19 +51,19 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S2-01 | 能力状态、locator、限制和错误合同 | TODO | |
-| S2-02 | 内容识别防伪与诚实矩阵 | TODO | |
-| S2-03 | TXT UTF-8/16/GBK/GB18030 | TODO | |
-| S2-04 | TXT 分章、换行和锚点 | TODO | |
-| S2-05 | Markdown 独立解析器 | TODO | |
-| S2-06 | 安全 ZIP/XML 基础 | TODO | |
-| S2-07 | HTML 安全文本导入 | TODO | |
-| S2-08 | EPUB container/OPF/spine | TODO | |
-| S2-09 | EPUB 正文、章节和锚点 | TODO | |
-| S2-10 | DOCX 正文、标题和段落锚点 | TODO | |
-| S2-11 | 文本 PDF 与扫描版判定 | TODO | |
-| S2-12 | Windows path / Android URI 读取合同 | TODO | |
-| S2-13 | Tauri Windows 选择与导入命令 | TODO | |
+| S2-01 | 能力状态、locator、限制和错误合同 | AWAITING_CI | feb5426; link.exe EB-001 |
+| S2-02 | 内容识别防伪与诚实矩阵 | TODO | B07 partially addressed; needs OLE/NUL |
+| S2-03 | TXT UTF-8/16/GBK/GB18030 | AWAITING_CI | 40889c8; encoding_rs added; link.exe EB-001 |
+| S2-04 | TXT 分章、换行和锚点 | TODO | existing plain_text.rs covers basics |
+| S2-05 | Markdown 独立解析器 | AWAITING_CI | afe2d73; link.exe EB-001 |
+| S2-06 | 安全 ZIP/XML 基础 | AWAITING_CI | 07fe210; archive.rs; link.exe EB-001 |
+| S2-07 | HTML 安全文本导入 | TODO | needs html parser crate |
+| S2-08 | EPUB container/OPF/spine | TODO | needs S2-06 |
+| S2-09 | EPUB 正文、章节和锚点 | TODO | needs S2-08 |
+| S2-10 | DOCX 正文、标题和段落锚点 | TODO | needs S2-06 |
+| S2-11 | 文本 PDF 与扫描版判定 | TODO | needs pdf crate |
+| S2-12 | Windows path / Android URI 读取合同 | AWAITING_CI | bfca57c; SourceUri added; link.exe EB-001 |
+| S2-13 | Tauri Windows 选择与导入命令 | TODO | needs S2-12 + link.exe |
 | S2-14 | 前端真实导入流与能力状态 | TODO | |
 | S2-15 | S2 格式矩阵和 CI 总门禁 | TODO | |
 
