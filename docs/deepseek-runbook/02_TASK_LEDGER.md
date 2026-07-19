@@ -43,7 +43,7 @@
 | S1-12 | 颜色对比度自动门禁 | DONE | 13ff1c9; 67 tests (7 contrast); build ok |
 | S1-13 | 诚实导入占位与 favicon | DONE | cabd0bd; favicon added; import placeholder existing |
 | S1-14 | 三视口响应式浏览器验证 | TODO | Playwright install network timeout; needs CI |
-| S1-15 | S1 文档、Tauri 与 CI 总门禁 | TODO | needs CI + docs |
+| S1-15 | S1 文档、Tauri 与 CI 总门禁 | AWAITING_CI | 16f999b; pushed |
 
 ## S2｜多格式导入与来源定位
 
