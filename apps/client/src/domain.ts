@@ -60,8 +60,6 @@ export interface Book {
   format: BookFormat;
   /** User-facing name of the source, used as the display label. */
   sourceDisplayName: string;
-  /** Opaque reference for the Rust/native layer; never parsed by the frontend. */
-  sourceRef?: string;
   status: BookStatus;
   addedAt: string; // ISO 8601
   totalChapters: number;
