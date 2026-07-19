@@ -6,6 +6,8 @@ pub enum TextEncoding {
     Utf8Bom,
     Utf16Le,
     Utf16Be,
+    Gbk,
+    Gb18030,
 }
 
 impl TextEncoding {
@@ -15,6 +17,8 @@ impl TextEncoding {
             Self::Utf8Bom => "UTF-8 BOM",
             Self::Utf16Le => "UTF-16 LE",
             Self::Utf16Be => "UTF-16 BE",
+            Self::Gbk => "GBK",
+            Self::Gb18030 => "GB18030",
         }
     }
 }
@@ -101,13 +105,8 @@ fn decode_with_hint(bytes: &[u8], hint: TextEncodingHint) -> Result<DecodedText,
             let payload = bytes.strip_prefix(&[0xfe, 0xff]).unwrap_or(bytes);
             decode_utf16(payload, false)
         }
-        TextEncodingHint::Gbk | TextEncodingHint::Gb18030 => Err(ImportError::EncodingPending {
-            encoding: hint.label().to_owned(),
-            detail: format!(
-                "{} 已被识别，但跨 Windows/Android 的无损解码器尚未接入",
-                hint.label()
-            ),
-        }),
+        TextEncodingHint::Gbk => decode_gbk(bytes),
+        TextEncodingHint::Gb18030 => decode_gb18030(bytes),
     }
 }
 
@@ -154,6 +153,34 @@ fn decode_utf16(bytes: &[u8], little_endian: bool) -> Result<DecodedText, Import
     Ok(DecodedText { text, encoding })
 }
 
+fn decode_gbk(bytes: &[u8]) -> Result<DecodedText, ImportError> {
+    let (text, _encoding, had_errors) = encoding_rs::GBK.decode(bytes);
+    if had_errors {
+        return Err(ImportError::InvalidText {
+            encoding: "GBK".to_owned(),
+            detail: "包含无法映射的字节序列".to_owned(),
+        });
+    }
+    Ok(DecodedText {
+        text: text.into_owned(),
+        encoding: TextEncoding::Gbk,
+    })
+}
+
+fn decode_gb18030(bytes: &[u8]) -> Result<DecodedText, ImportError> {
+    let (text, _encoding, had_errors) = encoding_rs::GB18030.decode(bytes);
+    if had_errors {
+        return Err(ImportError::InvalidText {
+            encoding: "GB18030".to_owned(),
+            detail: "包含无法映射的字节序列".to_owned(),
+        });
+    }
+    Ok(DecodedText {
+        text: text.into_owned(),
+        encoding: TextEncoding::Gb18030,
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -179,7 +206,16 @@ mod tests {
     }
 
     #[test]
-    fn reports_legacy_chinese_encoding_as_pending() {
+    fn decodes_gbk_with_explicit_hint() {
+        // GBK encoding of "第一章"
+        let gbk_bytes = [0xb5, 0xda, 0xd2, 0xbb, 0xd5, 0xc2];
+        let decoded = decode(&gbk_bytes, Some(TextEncodingHint::Gbk)).unwrap();
+        assert_eq!(decoded.text, "第一章");
+        assert_eq!(decoded.encoding, TextEncoding::Gbk);
+    }
+
+    #[test]
+    fn reports_legacy_chinese_encoding_as_pending_without_hint() {
         let error = decode(&[0xb5, 0xda, 0xd2, 0xbb, 0xd5, 0xc2], None).unwrap_err();
         assert!(matches!(error, ImportError::EncodingPending { .. }));
     }

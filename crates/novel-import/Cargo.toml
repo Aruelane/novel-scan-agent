@@ -9,4 +9,5 @@ publish = false
 path = "src/lib.rs"
 
 [dependencies]
+encoding_rs = "0.8"
 
