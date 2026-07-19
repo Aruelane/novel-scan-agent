@@ -8,9 +8,9 @@ use serde::{Deserialize, Serialize};
 
 use crate::{
     stable_fingerprint, AlertLevel, Chapter, ChapterRef, CompressionError, CompressionRequest,
-    ConfirmationScope, ContextCompressor, ContextSnapshot, EvidenceAnchor, Finding, FindingStatus,
-    ModelProvider, NovelDocument, NovelTask, ProviderCandidate, ProviderError, ProviderStamp,
-    RuleCategory, RuleContext, RuleDefinition, RuleSelection, TaskStatus, TextSpan,
+    ConfirmationScope, ContextCompressor, ContextSnapshot, DetectionMode, EvidenceAnchor, Finding,
+    FindingStatus, ModelProvider, NovelDocument, NovelTask, ProviderCandidate, ProviderError,
+    ProviderStamp, RuleCategory, RuleContext, RuleDefinition, RuleSelection, TaskStatus, TextSpan,
 };
 
 pub const CHECKPOINT_SCHEMA_VERSION: u32 = 2;
@@ -783,7 +783,7 @@ fn scan_profile_fingerprint(
         .iter()
         .map(|rule| {
             format!(
-                "{}:{}:{}:{}:{}:{}:{}:{}",
+                "{}:{}:{}:{}:{}:{}:{}:{}:mode={}:profile={:?}:criteria_len={}\0{}\0excl_len={}\0{}\0pend_len={}\0{}",
                 rule.id,
                 rule.version,
                 rule.name,
@@ -791,7 +791,15 @@ fn scan_profile_fingerprint(
                 category_tag(rule.category),
                 alert_level_tag(rule.alert_level),
                 scope_tag(rule.confirmation_scope),
-                rule.requires_user_boundary
+                rule.requires_user_boundary,
+                mode_tag(rule.detection_mode),
+                rule.detection_profile_ref,
+                rule.criteria.len(),
+                rule.criteria.join("\0"),
+                rule.exclusions.len(),
+                rule.exclusions.join("\0"),
+                rule.pending_conditions.len(),
+                rule.pending_conditions.join("\0"),
             )
         })
         .collect::<Vec<_>>();
@@ -824,6 +832,13 @@ const fn alert_level_tag(alert_level: AlertLevel) -> &'static str {
         AlertLevel::Medium => "medium",
         AlertLevel::Low => "low",
         AlertLevel::Info => "info",
+    }
+}
+
+const fn mode_tag(mode: DetectionMode) -> &'static str {
+    match mode {
+        DetectionMode::Semantic => "semantic",
+        DetectionMode::ManualOnly => "manual_only",
     }
 }
 

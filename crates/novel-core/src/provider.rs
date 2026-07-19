@@ -3,7 +3,8 @@ use std::{fmt, future::Future, pin::Pin};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AlertLevel, Chapter, ConfirmationScope, ContextSnapshot, RuleCategory, RuleDefinition,
+    AlertLevel, Chapter, ConfirmationScope, ContextSnapshot, DetectionMode, RuleCategory,
+    RuleDefinition,
 };
 
 pub type ProviderFuture<'a> =
@@ -19,6 +20,11 @@ pub struct RuleContext {
     pub alert_level: AlertLevel,
     pub confirmation_scope: ConfirmationScope,
     pub requires_user_boundary: bool,
+    pub detection_mode: DetectionMode,
+    pub detection_profile_ref: Option<String>,
+    pub criteria: Vec<String>,
+    pub exclusions: Vec<String>,
+    pub pending_conditions: Vec<String>,
 }
 
 impl RuleContext {
@@ -32,6 +38,11 @@ impl RuleContext {
             alert_level,
             confirmation_scope: rule.confirmation_scope,
             requires_user_boundary: rule.requires_user_boundary,
+            detection_mode: rule.detection_mode,
+            detection_profile_ref: rule.detection_profile_ref.clone(),
+            criteria: rule.criteria.clone(),
+            exclusions: rule.exclusions.clone(),
+            pending_conditions: rule.pending_conditions.clone(),
         }
     }
 }
@@ -247,6 +258,11 @@ mod tests {
                 alert_level: AlertLevel::Critical,
                 confirmation_scope: ConfirmationScope::Chapter,
                 requires_user_boundary: false,
+                detection_mode: DetectionMode::Semantic,
+                detection_profile_ref: None,
+                criteria: vec!["test".into()],
+                exclusions: vec!["test".into()],
+                pending_conditions: vec!["test".into()],
             }],
             context: ContextSnapshot::default(),
         };
