@@ -16,11 +16,19 @@ try {
 
 const permissions = cap.permissions ?? [];
 
-// Assert permissions contains ONLY "allow-import-capabilities"
-if (permissions.length !== 1 || permissions[0] !== 'allow-import-capabilities') {
+// Assert permissions contain only allowed permissions
+const allowed = new Set(['allow-import-capabilities', 'allow-rule-pack-summary']);
+for (const perm of permissions) {
+  if (!allowed.has(perm)) {
+    console.error('CAPABILITY VALIDATE FAIL');
+    console.error(`reason: unexpected permission "${perm}"`);
+    console.error(`allowed: ${JSON.stringify([...allowed])}`);
+    process.exit(1);
+  }
+}
+if (permissions.length === 0) {
   console.error('CAPABILITY VALIDATE FAIL');
-  console.error('reason: permissions array must contain exactly ["allow-import-capabilities"]');
-  console.error(`actual: ${JSON.stringify(permissions)}`);
+  console.error('reason: permissions array is empty');
   process.exit(1);
 }
 

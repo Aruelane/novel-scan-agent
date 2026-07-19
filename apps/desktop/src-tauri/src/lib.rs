@@ -79,6 +79,70 @@ fn import_capabilities() -> Vec<ImportCapabilityDto> {
         .collect()
 }
 
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RulePackSummaryDto {
+    id: String,
+    version: String,
+    schema_version: String,
+    rule_count: usize,
+    rules: Vec<RuleSummaryDto>,
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+struct RuleSummaryDto {
+    id: String,
+    version: u32,
+    name: String,
+    category: String,
+    default_severity: String,
+    status: String,
+    detection_mode: String,
+    criteria_count: usize,
+    exclusions_count: usize,
+    pending_conditions_count: usize,
+}
+
+fn load_seed_rule_pack() -> Result<novel_rulepack::RulePack, String> {
+    let json = include_str!(concat!(
+        env!("CARGO_MANIFEST_DIR"),
+        "/../../../packages/rulepack/packs/yy-novel-bar/2026.0.0-seed.1.json"
+    ));
+    novel_rulepack::RulePack::load_from_json(json).map_err(|e| e.to_string())
+}
+
+fn build_rule_pack_summary(pack: &novel_rulepack::RulePack) -> RulePackSummaryDto {
+    RulePackSummaryDto {
+        id: pack.id.clone(),
+        version: pack.version.clone(),
+        schema_version: pack.schema_version.clone(),
+        rule_count: pack.rules.len(),
+        rules: pack
+            .rules
+            .iter()
+            .map(|r| RuleSummaryDto {
+                id: r.definition.id.clone(),
+                version: r.definition.version,
+                name: r.definition.name.clone(),
+                category: format!("{:?}", r.definition.category).to_lowercase(),
+                default_severity: format!("{:?}", r.definition.default_alert_level).to_lowercase(),
+                status: r.status.clone(),
+                detection_mode: format!("{:?}", r.definition.detection_mode).to_lowercase(),
+                criteria_count: r.definition.criteria.len(),
+                exclusions_count: r.definition.exclusions.len(),
+                pending_conditions_count: r.definition.pending_conditions.len(),
+            })
+            .collect(),
+    }
+}
+
+#[tauri::command]
+fn rule_pack_summary() -> Result<RulePackSummaryDto, String> {
+    let pack = load_seed_rule_pack()?;
+    Ok(build_rule_pack_summary(&pack))
+}
+
 fn database_migrations() -> Vec<Migration> {
     vec![Migration {
         version: 1,
@@ -97,7 +161,10 @@ pub fn run() {
                 .add_migrations(DATABASE_URL, database_migrations())
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![import_capabilities])
+        .invoke_handler(tauri::generate_handler![
+            import_capabilities,
+            rule_pack_summary
+        ])
         .run(tauri::generate_context!())
         .expect("error while running 小说扫评 Agent");
 }
@@ -110,7 +177,6 @@ fn import_index_to_core_ordinal(index: usize) -> Option<u32> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::*;
 
     #[test]
@@ -171,5 +237,23 @@ mod tests {
         assert!(import_capabilities()
             .iter()
             .all(|item| !item.source_locator.trim().is_empty()));
+    }
+
+    #[test]
+    fn rule_pack_summary_loads_32_rules() {
+        let summary = rule_pack_summary().unwrap();
+        assert_eq!(summary.rule_count, 32);
+        let first = &summary.rules[0];
+        assert_eq!(first.id, "yy.thunder.accepting-prior-partner");
+        assert_eq!(first.version, 1);
+        assert_eq!(first.status, "draft");
+    }
+
+    #[test]
+    fn rule_pack_summary_first_rule_detection_present() {
+        let summary = rule_pack_summary().unwrap();
+        let first = &summary.rules[0];
+        assert_eq!(first.detection_mode, "semantic");
+        assert!(first.criteria_count > 0);
     }
 }

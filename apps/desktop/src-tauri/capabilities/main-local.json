@@ -6,6 +6,7 @@
   "windows": ["main"],
   "platforms": ["windows", "android"],
   "permissions": [
-    "allow-import-capabilities"
+    "allow-import-capabilities",
+    "allow-rule-pack-summary"
   ]
 }
