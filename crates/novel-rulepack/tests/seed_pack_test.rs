@@ -425,3 +425,34 @@ fn original_seed_still_loads_32_rules() {
     let pack = load_pack();
     assert_eq!(pack.rules.len(), 32);
 }
+
+#[test]
+fn first_seed_rule_preserves_runtime_metadata() {
+    let pack = load_pack();
+    let first = &pack.rules[0];
+    assert_eq!(first.definition.id, "yy.thunder.accepting-prior-partner");
+    assert_eq!(first.status, "draft", "status should be draft");
+    assert!(!first.default_enabled, "default_enabled should be false");
+    assert_eq!(
+        first.profile_ref.as_deref(),
+        Some("strict-evidence-v1"),
+        "profile_ref should be strict-evidence-v1"
+    );
+    assert_eq!(
+        first.provenance.verification.as_deref(),
+        Some("term_observed"),
+        "provenance verification should be term_observed"
+    );
+    assert!(
+        first.provenance.source_refs.as_ref().map_or(0, |v| v.len()) >= 2,
+        "provenance should have at least 2 source refs"
+    );
+    assert!(
+        first
+            .provenance
+            .note
+            .as_ref()
+            .map_or(false, |n| !n.is_empty()),
+        "provenance note should be non-empty"
+    );
+}

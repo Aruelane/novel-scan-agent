@@ -40,6 +40,8 @@ pub struct RuleJson {
     pub default_severity: String,
     pub detection: DetectionJson,
     #[serde(default)]
+    pub provenance: ProvenanceJson,
+    #[serde(default)]
     pub tags: Vec<String>,
 }
 
@@ -58,7 +60,7 @@ pub struct DetectionJson {
     pub requires_user_boundary: bool,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ProvenanceJson {
     #[allow(dead_code)]
@@ -119,6 +121,10 @@ pub struct LoadedRule {
     pub pending_conditions: Vec<String>,
     /// "semantic" or "manual_only"
     pub detection_mode: String,
+    pub profile_ref: Option<String>,
+    pub status: String,
+    pub default_enabled: bool,
+    pub provenance: ProvenanceJson,
 }
 
 /// A deserialized, validated rule pack ready for use by the scanner.
@@ -256,6 +262,10 @@ impl RulePack {
         let criteria = rule.detection.criteria.clone();
         let exclusions = rule.detection.exclusions.clone();
         let pending_conditions = rule.detection.pending_conditions.clone();
+        let profile_ref = rule.detection.profile_ref.clone();
+        let status = rule.status.clone();
+        let default_enabled = rule.default_enabled;
+        let provenance = rule.provenance.clone();
 
         let definition = RuleDefinition::try_from(rule)?;
 
@@ -265,6 +275,10 @@ impl RulePack {
             exclusions,
             pending_conditions,
             detection_mode,
+            profile_ref,
+            status,
+            default_enabled,
+            provenance,
         })
     }
 }
@@ -295,6 +309,11 @@ mod tests {
                 pending_conditions: vec![],
                 confirmation_scope: "chapter".into(),
                 requires_user_boundary: false,
+            },
+            provenance: ProvenanceJson {
+                verification: Some("verified".into()),
+                source_refs: Some(vec!["test.source".into()]),
+                note: Some("test provenance".into()),
             },
             tags: vec!["test".into()],
         }
