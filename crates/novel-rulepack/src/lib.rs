@@ -190,7 +190,7 @@ impl TryFrom<RuleJson> for RuleDefinition {
         // Unverified rules must not be default-enabled.
         if rule.status != "verified" && rule.default_enabled {
             return Err(RulePackError::new(format!(
-                "rule '{}' has status '{}' but default_enabled is true; \
+                "unverified rule '{}' has status '{}' but default_enabled is true; \
                  only verified rules may be default-enabled",
                 rule.id, rule.status
             )));
