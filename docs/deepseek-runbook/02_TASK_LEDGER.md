@@ -32,7 +32,7 @@
 | S1-01 | B07-FIX：未核验规则错误消息 | AWAITING_CI | 6ac840e; fmt ok; link.exe EB-001 |
 | S1-02 | Rulepack 拒绝重复规则 ID | AWAITING_CI | af2f281; fmt ok; link.exe EB-001 |
 | S1-03 | LoadedRule 保留运行时元数据 | AWAITING_CI | bd71539; fmt ok; link.exe EB-001 |
-| S1-04 | 完整检测语义进入 RuleDefinition | TODO | |
+| S1-04 | 完整检测语义进入 RuleDefinition | IN_PROGRESS | started |
 | S1-05 | 规则语义进入 provider 与恢复指纹 | TODO | |
 | S1-06 | ImportedDocument 到 NovelDocument checked adapter | TODO | |
 | S1-07 | 桌面生产入口加载 seed rulepack | TODO | |

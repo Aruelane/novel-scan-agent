@@ -60,6 +60,13 @@ impl AlertLevel {
     }
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum DetectionMode {
+    Semantic,
+    ManualOnly,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct RuleDefinition {
     pub id: String,
@@ -76,6 +83,15 @@ pub struct RuleDefinition {
     pub requires_user_boundary: bool,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub detection_profile_ref: Option<String>,
+    pub detection_mode: DetectionMode,
+    #[serde(default)]
+    pub criteria: Vec<String>,
+    #[serde(default)]
+    pub exclusions: Vec<String>,
+    #[serde(default)]
+    pub pending_conditions: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

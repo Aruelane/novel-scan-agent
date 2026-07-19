@@ -202,6 +202,7 @@ fn invalid_category_is_rejected() {
                 "defaultEnabled": false,
                 "defaultSeverity": "low",
                 "detection": {
+                    "mode": "manual_only",
                     "criteria": [],
                     "exclusions": [],
                     "pendingConditions": [],
@@ -238,6 +239,7 @@ fn invalid_scope_is_rejected() {
                 "defaultEnabled": false,
                 "defaultSeverity": "low",
                 "detection": {
+                    "mode": "manual_only",
                     "criteria": [],
                     "exclusions": [],
                     "pendingConditions": [],
@@ -274,6 +276,7 @@ fn unverified_and_default_enabled_is_rejected() {
                 "defaultEnabled": true,
                 "defaultSeverity": "low",
                 "detection": {
+                    "mode": "manual_only",
                     "criteria": [],
                     "exclusions": [],
                     "pendingConditions": [],
@@ -310,6 +313,7 @@ fn zero_version_is_rejected() {
                 "defaultEnabled": false,
                 "defaultSeverity": "low",
                 "detection": {
+                    "mode": "manual_only",
                     "criteria": [],
                     "exclusions": [],
                     "pendingConditions": [],
@@ -389,6 +393,7 @@ fn duplicate_rule_id_is_rejected() {
                 "defaultEnabled": false,
                 "defaultSeverity": "low",
                 "detection": {
+                    "mode": "manual_only",
                     "criteria": [],
                     "exclusions": [],
                     "pendingConditions": [],
@@ -406,6 +411,7 @@ fn duplicate_rule_id_is_rejected() {
                 "defaultEnabled": false,
                 "defaultSeverity": "low",
                 "detection": {
+                    "mode": "manual_only",
                     "criteria": [],
                     "exclusions": [],
                     "pendingConditions": [],

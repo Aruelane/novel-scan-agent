@@ -1,6 +1,6 @@
 use std::fmt;
 
-use novel_core::{AlertLevel, ConfirmationScope, RuleCategory, RuleDefinition};
+use novel_core::{AlertLevel, ConfirmationScope, DetectionMode, RuleCategory, RuleDefinition};
 use serde::Deserialize;
 
 // ---------------------------------------------------------------------------
@@ -163,6 +163,16 @@ fn map_severity(raw: &str) -> Result<AlertLevel, RulePackError> {
     }
 }
 
+fn map_detection_mode(raw: &str) -> Result<DetectionMode, RulePackError> {
+    match raw {
+        "semantic" => Ok(DetectionMode::Semantic),
+        "manual_only" => Ok(DetectionMode::ManualOnly),
+        other => Err(RulePackError::new(format!(
+            "unknown detection mode '{other}'; expected 'semantic' or 'manual_only'"
+        ))),
+    }
+}
+
 fn map_confirmation_scope(raw: &str) -> Result<ConfirmationScope, RulePackError> {
     match raw {
         "local" => Ok(ConfirmationScope::Local),
@@ -192,6 +202,30 @@ impl TryFrom<RuleJson> for RuleDefinition {
         let category = map_category(&rule.category)?;
         let default_alert_level = map_severity(&rule.default_severity)?;
         let confirmation_scope = map_confirmation_scope(&rule.detection.confirmation_scope)?;
+        let detection_mode =
+            map_detection_mode(rule.detection.mode.as_deref().unwrap_or("semantic"))?;
+
+        // Validate detection arrays are non-empty for semantic rules.
+        if matches!(detection_mode, DetectionMode::Semantic) {
+            if rule.detection.criteria.is_empty() {
+                return Err(RulePackError::new(format!(
+                    "rule '{}' has semantic detection_mode but empty criteria",
+                    rule.id
+                )));
+            }
+            if rule.detection.exclusions.is_empty() {
+                return Err(RulePackError::new(format!(
+                    "rule '{}' has semantic detection_mode but empty exclusions",
+                    rule.id
+                )));
+            }
+            if rule.detection.pending_conditions.is_empty() {
+                return Err(RulePackError::new(format!(
+                    "rule '{}' has semantic detection_mode but empty pending_conditions",
+                    rule.id
+                )));
+            }
+        }
 
         // Unverified rules must not be default-enabled.
         if rule.status != "verified" && rule.default_enabled {
@@ -212,6 +246,11 @@ impl TryFrom<RuleJson> for RuleDefinition {
             confirmation_scope,
             requires_user_boundary: rule.detection.requires_user_boundary,
             tags: rule.tags,
+            detection_profile_ref: rule.detection.profile_ref.clone(),
+            detection_mode,
+            criteria: rule.detection.criteria.clone(),
+            exclusions: rule.detection.exclusions.clone(),
+            pending_conditions: rule.detection.pending_conditions.clone(),
         })
     }
 }

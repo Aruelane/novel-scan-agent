@@ -933,6 +933,11 @@ mod tests {
             confirmation_scope: ConfirmationScope::Local,
             requires_user_boundary: false,
             tags: vec!["relationship".into()],
+            detection_profile_ref: None,
+            detection_mode: DetectionMode::Semantic,
+            criteria: vec![],
+            exclusions: vec![],
+            pending_conditions: vec![],
         }
     }
 
