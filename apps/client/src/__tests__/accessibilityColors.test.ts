@@ -9,85 +9,38 @@ function relativeLuminance(r: number, g: number, b: number): number {
   return 0.2126 * toLinear(r) + 0.7152 * toLinear(g) + 0.0722 * toLinear(b);
 }
 
-/** Contrast ratio between two sRGB colors */
 function contrastRatio(
   r1: number, g1: number, b1: number,
   r2: number, g2: number, b2: number,
 ): number {
   const l1 = relativeLuminance(r1, g1, b1);
   const l2 = relativeLuminance(r2, g2, b2);
-  const lighter = Math.max(l1, l2);
-  const darker = Math.min(l1, l2);
-  return (lighter + 0.05) / (darker + 0.05);
+  return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
 }
 
-/** Parse a hex color like #1a2b3c or #abc */
 function parseHex(hex: string): [number, number, number] {
   let h = hex.replace('#', '');
   if (h.length === 3) h = h[0]+h[0]+h[1]+h[1]+h[2]+h[2];
-  return [
-    parseInt(h.slice(0, 2), 16),
-    parseInt(h.slice(2, 4), 16),
-    parseInt(h.slice(4, 6), 16),
-  ];
+  return [parseInt(h.slice(0,2),16), parseInt(h.slice(2,4),16), parseInt(h.slice(4,6),16)];
 }
 
-const BG_MAIN = '#fdf8f3';     // --color-bg
-const TEXT_PRIMARY = '#3b332b';// --color-text
-const TEXT_MUTED = '#8c7b66';  // --color-text-muted (adjusted for AA)
-const COLOR_DANGER = '#c75b4a';// --color-danger
-const COLOR_ACCENT = '#3d7040';// --color-accent (adjusted for AA)
-const COLOR_INFO = '#3a6080';  // --color-info (adjusted for AA)
-const COLOR_SEV_5 = '#c75b4a'; // severity-5
-const COLOR_SEV_1 = '#8c7b66'; // severity-1 (adjusted for AA)
+// Actual CSS custom property values from index.css
+const BG = '#fdf8f3';
+const pairs: [string, string, string][] = [
+  ['primary text', '#3b332b', BG],
+  ['muted text', '#705e4c', BG],
+  ['danger text', '#a33d30', BG],
+  ['accent text', '#3d7040', BG],
+  ['info text', '#3a6080', BG],
+  ['severity-5 text', '#a33d30', BG],
+  ['severity-1 text', '#705e4c', BG],
+];
 
 describe('WCAG AA color contrast', () => {
-  it('primary text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(TEXT_PRIMARY), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('muted text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(TEXT_MUTED), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('danger text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(COLOR_DANGER), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('accent text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(COLOR_ACCENT), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('info text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(COLOR_INFO), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('severity-5 text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(COLOR_SEV_5), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
-
-  it('severity-1 text on main background >= 4.5:1', () => {
-    const ratio = contrastRatio(
-      ...parseHex(COLOR_SEV_1), ...parseHex(BG_MAIN),
-    );
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
-  });
+  for (const [label, fg, bg] of pairs) {
+    it(`${label} on background >= 4.5:1`, () => {
+      const ratio = contrastRatio(...parseHex(fg), ...parseHex(bg));
+      expect(ratio).toBeGreaterThanOrEqual(4.5);
+    });
+  }
 });
