@@ -37,7 +37,7 @@ export function SettingsPanel({ settings }: SettingsPanelProps) {
       <div className="settings-context">
         <div className="settings-field">
           <label className="settings-field__label" htmlFor="context-window">
-            单次阅读窗口（tokens）
+            单次阅读窗口（字符预算，演示值）
           </label>
           <input
             id="context-window"

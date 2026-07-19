@@ -113,7 +113,7 @@
 .status-dot--idle     { background: var(--color-text-muted); }
 .status-dot--scanning  { background: var(--color-info); animation: pulse 1.5s ease-in-out infinite; }
 .status-dot--scanned   { background: var(--color-accent); }
-.status-dot--error     { background: var(--color-danger); }
+.status-dot--failed    { background: var(--color-danger); }
 
 @keyframes pulse {
   0%, 100% { opacity: 1; }
