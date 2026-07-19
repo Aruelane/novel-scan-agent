@@ -85,6 +85,32 @@ impl<'a> ImportRequest<'a> {
     }
 }
 
+/// Platform-agnostic source reference. Windows paths and Android content://
+/// URIs are never exposed to the frontend; only safe display names cross the
+/// Tauri command boundary.
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub enum SourceUri {
+    /// Windows filesystem path (Rust layer only).
+    WindowsPath(String),
+    /// Android Storage Access Framework content URI (Rust layer only).
+    AndroidContentUri(String),
+    /// In-memory or test data with a display label.
+    MemoryBuffer { display_name: String },
+}
+
+impl SourceUri {
+    pub fn safe_display_name(&self) -> &str {
+        match self {
+            Self::WindowsPath(p) => std::path::Path::new(p)
+                .file_name()
+                .and_then(|n| n.to_str())
+                .unwrap_or("unknown"),
+            Self::AndroidContentUri(_) => "Android document",
+            Self::MemoryBuffer { display_name } => display_name,
+        }
+    }
+}
+
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub struct SourceDescriptor {
     pub display_name: String,
