@@ -12,6 +12,7 @@
 
 #![forbid(unsafe_code)]
 
+pub mod archive;
 mod capability;
 mod encoding;
 mod error;
