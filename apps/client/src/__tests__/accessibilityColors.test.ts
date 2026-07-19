@@ -32,14 +32,14 @@ function parseHex(hex: string): [number, number, number] {
   ];
 }
 
-const BG_MAIN = '#FFFDF8';      // --color-bg-main
-const TEXT_PRIMARY = '#2D2A26'; // --color-text-primary
-const TEXT_MUTED = '#8C8880';   // --color-text-muted
-const COLOR_DANGER = '#C44A3F'; // --color-danger
-const COLOR_ACCENT = '#3F865E'; // --color-accent
-const COLOR_INFO = '#4A7BAF';   // --color-info
-const COLOR_SEV_5 = '#C44A3F';  // severity-5 (danger)
-const COLOR_SEV_1 = '#8C8880';  // severity-1 (info)
+const BG_MAIN = '#fdf8f3';     // --color-bg
+const TEXT_PRIMARY = '#3b332b';// --color-text
+const TEXT_MUTED = '#8c7b66';  // --color-text-muted (adjusted for AA)
+const COLOR_DANGER = '#c75b4a';// --color-danger
+const COLOR_ACCENT = '#3d7040';// --color-accent (adjusted for AA)
+const COLOR_INFO = '#3a6080';  // --color-info (adjusted for AA)
+const COLOR_SEV_5 = '#c75b4a'; // severity-5
+const COLOR_SEV_1 = '#8c7b66'; // severity-1 (adjusted for AA)
 
 describe('WCAG AA color contrast', () => {
   it('primary text on main background >= 4.5:1', () => {

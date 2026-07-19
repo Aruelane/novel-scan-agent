@@ -12,11 +12,11 @@
   --color-border-light:  #ede3d6;
   --color-text:          #3b332b;
   --color-text-secondary:#7a6e61;
-  --color-text-muted:    #a89880;
+  --color-text-muted:    #8c7b66;
   --color-primary:       #c4824e;
   --color-primary-hover: #a66b3e;
   --color-primary-light: #f0dcc8;
-  --color-accent:        #5b8c5a;
+  --color-accent:        #3d7040;
   --color-accent-light:  #d4e8d3;
 
   /* 语义色 */
@@ -24,11 +24,11 @@
   --color-danger-light:  #f5d8d3;
   --color-warning:       #c4953a;
   --color-warning-light: #f5e8cf;
-  --color-info:          #527a9e;
+  --color-info:          #3a6080;
   --color-info-light:    #d3e2f0;
 
   /* 严重度 */
-  --severity-1: #a89880;
+  --severity-1: #8c7b66;
   --severity-2: #b8a060;
   --severity-3: #c4953a;
   --severity-4: #c4693a;
