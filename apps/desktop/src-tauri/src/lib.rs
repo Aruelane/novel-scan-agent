@@ -102,9 +102,52 @@ pub fn run() {
         .expect("error while running 小说扫评 Agent");
 }
 
+/// Converts a 1-based imported chapter index to a 0-based core ordinal.
+/// Returns `None` for index == 0 or values that overflow `u32`.
+fn import_index_to_core_ordinal(index: usize) -> Option<u32> {
+    index.checked_sub(1).and_then(|v| u32::try_from(v).ok())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+    use super::*;
+
+    #[test]
+    fn chapter_index_1_maps_to_ordinal_0() {
+        assert_eq!(import_index_to_core_ordinal(1), Some(0));
+    }
+
+    #[test]
+    fn chapter_index_5_maps_to_ordinal_4() {
+        assert_eq!(import_index_to_core_ordinal(5), Some(4));
+    }
+
+    #[test]
+    fn consecutive_chapters_have_consecutive_ordinals() {
+        assert_eq!(import_index_to_core_ordinal(1), Some(0));
+        assert_eq!(import_index_to_core_ordinal(2), Some(1));
+        assert_eq!(import_index_to_core_ordinal(3), Some(2));
+    }
+
+    #[test]
+    fn index_zero_is_rejected() {
+        assert_eq!(import_index_to_core_ordinal(0), None);
+    }
+
+    #[test]
+    fn u32_max_plus_one_is_rejected() {
+        let big = (u32::MAX as usize).saturating_add(1);
+        assert_eq!(import_index_to_core_ordinal(big), None);
+    }
+
+    #[test]
+    fn u32_max_maps_correctly() {
+        assert_eq!(
+            import_index_to_core_ordinal(u32::MAX as usize),
+            Some(u32::MAX - 1)
+        );
+    }
 
     #[test]
     fn command_reports_every_import_registry_entry() {
