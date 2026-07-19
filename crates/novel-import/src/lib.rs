@@ -15,6 +15,7 @@
 mod capability;
 mod encoding;
 mod error;
+pub mod markdown;
 mod model;
 mod plain_text;
 
