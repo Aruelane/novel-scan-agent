@@ -3,6 +3,8 @@ import type { Rule, RuleCategory, Severity } from '../domain';
 import { categoryLabel, severityLabel } from '../domain';
 import './RuleSelector.css';
 
+const SEVERITIES: Severity[] = [1, 2, 3, 4, 5];
+
 interface RuleSelectorProps {
   rules: Rule[];
   onToggle: (ruleId: string) => void;
@@ -74,15 +76,39 @@ export function RuleSelector({ rules, onToggle, onSetSeverity }: RuleSelectorPro
                       </label>
 
                       <div className="rule-item__severity" role="radiogroup" aria-label={`${rule.name} 严重程度`}>
-                        {([1, 2, 3, 4, 5] as Severity[]).map(s => (
+                        {SEVERITIES.map((s, idx) => (
                           <button
                             key={s}
                             className={`severity-btn severity-btn--${s}${rule.severity === s ? ' severity-btn--active' : ''}`}
                             role="radio"
                             aria-checked={rule.severity === s}
                             aria-label={`${severityLabel(s)}`}
+                            tabIndex={rule.severity === s ? 0 : -1}
                             onClick={() => onSetSeverity(rule.id, s)}
-                            title={severityLabel(s)}
+                            onKeyDown={(event) => {
+                              let next: number;
+                              const cur = SEVERITIES.indexOf(rule.severity);
+                              switch (event.key) {
+                                case 'ArrowRight': case 'ArrowDown':
+                                  event.preventDefault();
+                                  next = (cur + 1) % SEVERITIES.length;
+                                  onSetSeverity(rule.id, SEVERITIES[next]);
+                                  break;
+                                case 'ArrowLeft': case 'ArrowUp':
+                                  event.preventDefault();
+                                  next = (cur - 1 + SEVERITIES.length) % SEVERITIES.length;
+                                  onSetSeverity(rule.id, SEVERITIES[next]);
+                                  break;
+                                case 'Home':
+                                  event.preventDefault();
+                                  onSetSeverity(rule.id, SEVERITIES[0]);
+                                  break;
+                                case 'End':
+                                  event.preventDefault();
+                                  onSetSeverity(rule.id, SEVERITIES[SEVERITIES.length - 1]);
+                                  break;
+                              }
+                            }}
                           >
                             {s}
                           </button>
