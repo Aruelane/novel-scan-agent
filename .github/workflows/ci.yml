@@ -91,6 +91,33 @@ jobs:
       - name: Validate capability allowlist
         run: npm run validate:capability
 
+  e2e:
+    name: E2E responsive (Playwright / Node 24)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: apps/client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+          cache-dependency-path: apps/client/package-lock.json
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install chromium
+
+      - name: Run responsive e2e tests
+        run: npm run test:e2e
+
   rust:
     name: Rust workspace (Windows 2022 / MSVC)
     # Pin the hosted VS 2022 image: it includes the MSVC C++ toolchain and
@@ -138,3 +165,7 @@ jobs:
         run: |
           npm ci
           npm run build
+
+      - name: Tauri debug build (no bundle)
+        working-directory: apps/desktop
+        run: npm run tauri -- build --debug --no-bundle --ci
