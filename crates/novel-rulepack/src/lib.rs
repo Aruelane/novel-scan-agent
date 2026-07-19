@@ -227,7 +227,14 @@ impl RulePack {
             .map_err(|e| RulePackError::new(format!("failed to parse rule pack JSON: {e}")))?;
 
         let mut rules = Vec::with_capacity(raw.rules.len());
+        let mut seen_ids = std::collections::HashSet::new();
         for rule_json in raw.rules {
+            if !seen_ids.insert(rule_json.id.clone()) {
+                return Err(RulePackError::new(format!(
+                    "duplicate rule id '{}'",
+                    rule_json.id
+                )));
+            }
             let loaded = Self::convert_to_loaded_rule(rule_json)?;
             rules.push(loaded);
         }

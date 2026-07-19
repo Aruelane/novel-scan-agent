@@ -367,3 +367,61 @@ fn seed_pack_detection_arrays_are_preserved() {
     );
     assert_eq!(first.detection_mode, "semantic");
 }
+
+#[test]
+fn duplicate_rule_id_is_rejected() {
+    let pack = load_pack();
+    // Clone the first rule and append it to create a duplicate
+    let first = &pack.rules[0];
+    let json = serde_json::json!({
+        "$schema": "",
+        "schemaVersion": "1.0.0",
+        "id": "test",
+        "version": "0.1.0",
+        "rules": [
+            {
+                "id": first.definition.id,
+                "version": first.definition.version,
+                "category": format!("{:?}", first.definition.category).to_lowercase(),
+                "name": &first.definition.name,
+                "description": &first.definition.description,
+                "status": "verified",
+                "defaultEnabled": false,
+                "defaultSeverity": "low",
+                "detection": {
+                    "criteria": [],
+                    "exclusions": [],
+                    "pendingConditions": [],
+                    "confirmationScope": "local",
+                    "requiresUserBoundary": false
+                }
+            },
+            {
+                "id": first.definition.id,
+                "version": first.definition.version + 1,
+                "category": format!("{:?}", first.definition.category).to_lowercase(),
+                "name": "duplicate",
+                "description": "duplicate id",
+                "status": "verified",
+                "defaultEnabled": false,
+                "defaultSeverity": "low",
+                "detection": {
+                    "criteria": [],
+                    "exclusions": [],
+                    "pendingConditions": [],
+                    "confirmationScope": "local",
+                    "requiresUserBoundary": false
+                }
+            }
+        ]
+    });
+    let err = RulePack::load_from_json(&json.to_string()).unwrap_err();
+    assert!(err.message.contains("duplicate rule id"));
+    assert!(err.message.contains(&first.definition.id));
+}
+
+#[test]
+fn original_seed_still_loads_32_rules() {
+    let pack = load_pack();
+    assert_eq!(pack.rules.len(), 32);
+}
