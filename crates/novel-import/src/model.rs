@@ -13,9 +13,37 @@ pub enum ChapterSplitMode {
 }
 
 #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+pub struct ImportLimits {
+    pub max_raw_bytes: usize,
+    pub max_decoded_chars: usize,
+    pub max_chapters: usize,
+    pub max_archive_entries: usize,
+    pub max_archive_entry_bytes: usize,
+    pub max_archive_total_uncompressed: usize,
+    pub max_xml_node_depth: usize,
+    pub max_pdf_pages: usize,
+}
+
+impl Default for ImportLimits {
+    fn default() -> Self {
+        Self {
+            max_raw_bytes: 50_000_000,
+            max_decoded_chars: 20_000_000,
+            max_chapters: 5_000,
+            max_archive_entries: 10_000,
+            max_archive_entry_bytes: 20_000_000,
+            max_archive_total_uncompressed: 100_000_000,
+            max_xml_node_depth: 100,
+            max_pdf_pages: 5_000,
+        }
+    }
+}
+
+#[derive(Clone, Copy, Debug, Eq, PartialEq)]
 pub struct ImportOptions {
     pub encoding_hint: Option<TextEncodingHint>,
     pub chapter_split: ChapterSplitMode,
+    pub limits: ImportLimits,
 }
 
 impl Default for ImportOptions {
@@ -23,6 +51,7 @@ impl Default for ImportOptions {
         Self {
             encoding_hint: None,
             chapter_split: ChapterSplitMode::Auto,
+            limits: ImportLimits::default(),
         }
     }
 }
