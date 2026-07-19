@@ -33,17 +33,17 @@
 | S1-02 | Rulepack 拒绝重复规则 ID | AWAITING_CI | af2f281; fmt ok; link.exe EB-001 |
 | S1-03 | LoadedRule 保留运行时元数据 | AWAITING_CI | bd71539; fmt ok; link.exe EB-001 |
 | S1-04 | 完整检测语义进入 RuleDefinition | AWAITING_CI | 735ff09; fmt ok; Node rulepack ok; link.exe EB-001 |
-| S1-05 | 规则语义进入 provider 与恢复指纹 | IN_PROGRESS | started |
-| S1-06 | ImportedDocument 到 NovelDocument checked adapter | TODO | |
-| S1-07 | 桌面生产入口加载 seed rulepack | TODO | |
-| S1-08 | 移除 WebView 原始 sourceRef | TODO | |
-| S1-09 | failed 状态与预算单位一致 | TODO | |
-| S1-10 | 规则选择键盘与焦点 | TODO | |
-| S1-11 | Workspace tabs 无障碍合同 | TODO | |
-| S1-12 | 颜色对比度自动门禁 | TODO | |
-| S1-13 | 诚实导入占位与 favicon | TODO | |
-| S1-14 | 三视口响应式浏览器验证 | TODO | |
-| S1-15 | S1 文档、Tauri 与 CI 总门禁 | TODO | |
+| S1-05 | 规则语义进入 provider 与恢复指纹 | AWAITING_CI | a67471c; fmt ok; link.exe EB-001 |
+| S1-06 | ImportedDocument 到 NovelDocument checked adapter | AWAITING_CI | a4d09d5; fmt ok; link.exe EB-001 |
+| S1-07 | 桌面生产入口加载 seed rulepack | AWAITING_CI | 2733fc3; fmt ok; capability ok; link.exe EB-001 |
+| S1-08 | 移除 WebView 原始 sourceRef | DONE | f45456f; 60 tests; build ok |
+| S1-09 | failed 状态与预算单位一致 | DONE | 7237d84; 67 tests; build ok |
+| S1-10 | 规则选择键盘与焦点 | DONE | fdfbb14; 67 tests; build ok |
+| S1-11 | Workspace tabs 无障碍合同 | DONE | 9e0bb31; 67 tests; build ok |
+| S1-12 | 颜色对比度自动门禁 | DONE | 13ff1c9; 67 tests (7 contrast); build ok |
+| S1-13 | 诚实导入占位与 favicon | DONE | cabd0bd; favicon added; import placeholder existing |
+| S1-14 | 三视口响应式浏览器验证 | TODO | Playwright install network timeout; needs CI |
+| S1-15 | S1 文档、Tauri 与 CI 总门禁 | TODO | needs CI + docs |
 
 ## S2｜多格式导入与来源定位
 
