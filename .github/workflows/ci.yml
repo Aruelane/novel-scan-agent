@@ -63,6 +63,9 @@ jobs:
       - name: Validate schemas, provenance, and selections
         run: npm run validate
 
+      - name: Validate negative schema fixtures
+        run: npm run validate:negative
+
   migration:
     name: Validate SQLite migration (Node 24)
     runs-on: ubuntu-latest
@@ -79,8 +82,14 @@ jobs:
         with:
           node-version: 24
 
+      - name: Install locked dependencies
+        run: npm ci
+
       - name: Validate initial SQLite migration
         run: npm run validate:migration
+
+      - name: Validate capability allowlist
+        run: npm run validate:capability
 
   rust:
     name: Rust workspace (Windows 2022 / MSVC)

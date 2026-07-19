@@ -2115,6 +2115,7 @@ dependencies = [
  "novel-core",
  "novel-import",
  "serde",
+ "serde_json",
  "tauri",
  "tauri-build",
  "tauri-plugin-dialog",
