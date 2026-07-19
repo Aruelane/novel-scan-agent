@@ -42,10 +42,10 @@ export function ImportPanel({ formats, loading, notice }: ImportPanelProps) {
           </svg>
         </div>
         <p className="import-dropzone__text">
-          拖拽文件到这里，或 <span className="import-dropzone__link">从设备选择</span>
+          导入功能将在 S2 多格式解析完成后接入
         </p>
         <p className="import-dropzone__hint">
-          当前是界面演示；文件选择与读取尚未连接到桌面或 Android 外壳。
+          当前支持 TXT 与 Markdown 的本地导入能力已进入核心，桌面与 Android 外壳的导入命令将在后续版本连接。
         </p>
       </div>
 
