@@ -62,21 +62,17 @@ export function Workspace({
 
   const activeIndex = TABS.findIndex(t => t.key === activeTab);
 
-  const focusTab = useCallback((index: number) => {
-    const clamped = Math.max(0, Math.min(TABS.length - 1, index));
-    tabRefs.current[clamped]?.focus();
-  }, []);
-
   const handleTabKeyDown = useCallback((event: KeyboardEvent<HTMLButtonElement>, index: number) => {
-    let nextIndex = index;
+    let nextIndex: number;
+    const len = TABS.length;
     switch (event.key) {
       case 'ArrowLeft':
         event.preventDefault();
-        nextIndex = index - 1;
+        nextIndex = (index - 1 + len) % len;
         break;
       case 'ArrowRight':
         event.preventDefault();
-        nextIndex = index + 1;
+        nextIndex = (index + 1) % len;
         break;
       case 'Home':
         event.preventDefault();
@@ -84,15 +80,13 @@ export function Workspace({
         break;
       case 'End':
         event.preventDefault();
-        nextIndex = TABS.length - 1;
+        nextIndex = len - 1;
         break;
       default:
         return;
     }
-    const clamped = Math.max(0, Math.min(TABS.length - 1, nextIndex));
-    tabRefs.current[clamped]?.focus();
-    // Move selection to the focused tab
-    onTabChange(TABS[clamped].key);
+    tabRefs.current[nextIndex]?.focus();
+    onTabChange(TABS[nextIndex].key);
   }, [onTabChange]);
 
   return (
