@@ -3,6 +3,8 @@ use novel_import::{capability_registry, CapabilityStatus, FormatCapability, Nove
 use serde::Serialize;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+pub mod persistence;
+
 const DATABASE_URL: &str = "sqlite:novel-scout.db";
 
 #[derive(Debug, Serialize)]
