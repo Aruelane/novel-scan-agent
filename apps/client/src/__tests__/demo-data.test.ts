@@ -130,13 +130,10 @@ describe('demoHits', () => {
 });
 
 describe('demoProviders', () => {
-  it('includes all five provider types', () => {
+  it('includes DeepSeek provider', () => {
     const types = demoProviders.map(p => p.type);
-    expect(types).toContain('openai');
-    expect(types).toContain('anthropic');
-    expect(types).toContain('gemini');
     expect(types).toContain('deepseek');
-    expect(types).toContain('local');
+    expect(demoProviders.length).toBe(1);
   });
 
   it('each provider has endpoint defined', () => {
