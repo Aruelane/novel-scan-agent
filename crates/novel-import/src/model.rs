@@ -120,7 +120,7 @@ pub struct SourceDescriptor {
 }
 
 #[non_exhaustive]
-#[derive(Clone, Copy, Debug, Eq, PartialEq)]
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum SourceLocator {
     /// Half-open byte offsets refer to the decoded UTF-8 string, not necessarily
     /// the original file bytes (important for UTF-16 input).
@@ -129,6 +129,11 @@ pub enum SourceLocator {
         line_end: usize,
         decoded_byte_start: usize,
         decoded_byte_end: usize,
+    },
+    /// EPUB spine item + paragraph index.
+    EpubSpine {
+        resource: String,
+        paragraph_index: usize,
     },
 }
 
@@ -148,7 +153,7 @@ impl SourceAnchor {
             (Some(index), None) => format!("第 {index} 节"),
             _ => "全文".to_owned(),
         };
-        match self.locator {
+        match &self.locator {
             SourceLocator::TextRange {
                 line_start,
                 line_end,
@@ -164,6 +169,9 @@ impl SourceAnchor {
                 "{} · {} · 第 {}–{} 行",
                 self.source_name, chapter, line_start, line_end
             ),
+            SourceLocator::EpubSpine { resource, .. } => {
+                format!("{} · {} · {}", self.source_name, chapter, resource)
+            }
         }
     }
 }

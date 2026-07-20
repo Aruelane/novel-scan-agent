@@ -78,9 +78,9 @@ const CAPABILITIES: &[FormatCapability] = &[
         label: "EPUB",
         extensions: &["epub"],
         media_types: &["application/epub+zip"],
-        status: CapabilityStatus::Pending,
-        detail: "已识别格式，解析 spine、目录与 EPUB CFI 的导入器将在后续阶段接入",
-        source_locator: "spine 项 + 资源路径 + EPUB CFI/段落",
+        status: CapabilityStatus::Ready,
+        detail: "支持 EPUB 容器验证、OPF spine 排序和 XHTML 正文提取",
+        source_locator: "spine 项 + 资源路径 + 段落序号",
     },
     FormatCapability {
         format: NovelFormat::Docx,

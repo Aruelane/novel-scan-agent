@@ -49,6 +49,7 @@ pub fn import_novel(request: ImportRequest<'_>) -> Result<ImportedDocument, Impo
         CapabilityStatus::Ready => match format {
             NovelFormat::PlainText | NovelFormat::Markdown => plain_text::import(request, format),
             NovelFormat::Html => html::import(request, format),
+            NovelFormat::Epub => epub::import(request, format),
             _ => Err(ImportError::UnsupportedFormat {
                 source_name: request.source_name.to_owned(),
                 detail: format!(
@@ -99,19 +100,19 @@ mod tests {
             CapabilityStatus::Ready
         );
         assert_eq!(
-            capability_for(NovelFormat::Epub).status,
+            capability_for(NovelFormat::Docx).status,
             CapabilityStatus::Pending
         );
     }
 
     #[test]
     fn known_but_unfinished_format_returns_pending_instead_of_fake_success() {
-        let error = import_novel(ImportRequest::new("book.epub", b"PK\x03\x04")).unwrap_err();
+        let error = import_novel(ImportRequest::new("book.docx", b"PK\x03\x04")).unwrap_err();
 
         assert!(matches!(
             error,
             ImportError::PendingSupport {
-                format: NovelFormat::Epub,
+                format: NovelFormat::Docx,
                 ..
             }
         ));
