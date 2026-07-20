@@ -15,6 +15,7 @@
 pub mod archive;
 mod capability;
 mod encoding;
+pub mod epub;
 mod error;
 pub mod html;
 pub mod markdown;
