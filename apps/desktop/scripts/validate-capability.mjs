@@ -17,7 +17,7 @@ try {
 const permissions = cap.permissions ?? [];
 
 // Assert permissions contain only allowed permissions
-const allowed = new Set(['allow-import-capabilities', 'allow-rule-pack-summary']);
+const allowed = new Set(['allow-import-capabilities', 'allow-import-novel-bytes', 'allow-rule-pack-summary']);
 for (const perm of permissions) {
   if (!allowed.has(perm)) {
     console.error('CAPABILITY VALIDATE FAIL');

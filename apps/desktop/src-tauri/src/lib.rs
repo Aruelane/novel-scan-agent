@@ -81,6 +81,29 @@ fn import_capabilities() -> Vec<ImportCapabilityDto> {
 
 #[derive(Debug, Serialize)]
 #[serde(rename_all = "camelCase")]
+struct ImportResultDto {
+    source_name: String,
+    format: String,
+    chapter_count: usize,
+    total_chars: usize,
+    warnings: Vec<String>,
+}
+
+#[tauri::command]
+fn import_novel_bytes(source_name: String, bytes: Vec<u8>) -> Result<ImportResultDto, String> {
+    let request = novel_import::ImportRequest::new(&source_name, &bytes);
+    let doc = novel_import::import_novel(request).map_err(|e| e.to_string())?;
+    Ok(ImportResultDto {
+        source_name: doc.source.display_name,
+        format: format!("{:?}", doc.source.format),
+        chapter_count: doc.chapters.len(),
+        total_chars: doc.stats.character_count,
+        warnings: doc.warnings.iter().map(|w| w.message.clone()).collect(),
+    })
+}
+
+#[derive(Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct RulePackSummaryDto {
     id: String,
     version: String,
