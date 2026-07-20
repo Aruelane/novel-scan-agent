@@ -21,6 +21,7 @@ mod error;
 pub mod html;
 pub mod markdown;
 mod model;
+pub mod pdf;
 mod plain_text;
 
 pub use capability::{
