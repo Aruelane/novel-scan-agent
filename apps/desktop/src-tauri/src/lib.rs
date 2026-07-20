@@ -186,6 +186,7 @@ pub fn run() {
         )
         .invoke_handler(tauri::generate_handler![
             import_capabilities,
+            import_novel_bytes,
             rule_pack_summary
         ])
         .run(tauri::generate_context!())
