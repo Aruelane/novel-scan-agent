@@ -654,6 +654,12 @@ fn validate_checkpoint(
         provider_id,
         model_id,
     )?;
+    if checkpoint.context.schema_version != CONTEXT_SNAPSHOT_SCHEMA_VERSION {
+        return Err(ScanError::ResumeMismatch(format!(
+            "context snapshot schema version {} != {}",
+            checkpoint.context.schema_version, CONTEXT_SNAPSHOT_SCHEMA_VERSION
+        )));
+    }
     validate_unresolved_candidates(
         &checkpoint.context.unresolved_candidates,
         &checkpoint.findings,
