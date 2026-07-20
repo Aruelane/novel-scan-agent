@@ -389,7 +389,7 @@ CREATE TABLE usage_events (
         CHECK (outcome IN ('success', 'retry', 'failed')),
     created_at_ms INTEGER NOT NULL
         CHECK (created_at_ms >= 0),
-    FOREIGN KEY (scan_job_id, chapter_id) REFERENCES chapters(book_id, ordinal)
+    FOREIGN KEY (chapter_id) REFERENCES chapters(id)
 );
 
 CREATE INDEX idx_usage_events_job
