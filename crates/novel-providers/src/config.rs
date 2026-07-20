@@ -4,7 +4,13 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProviderProtocol {
+    /// Generic OpenAI-compatible chat completions endpoint.
+    OpenAICompatible,
+    /// DeepSeek-specific endpoint (uses OpenAI-compatible wire format).
     DeepSeek,
+    /// Anthropic native Messages API.
+    AnthropicNative,
+    /// Offline deterministic test provider (never in production).
     DeterministicTest,
 }
 
