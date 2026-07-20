@@ -64,7 +64,7 @@
 | S2-11 | 文本 PDF 与扫描版判定 | DONE | 42874be; 55 tests pass; import_novel wired; capability Ready |
 | S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 38 tests pass |
 | S2-13 | Tauri Windows 选择与导入命令 | DONE | fcd6ec8; import_novel_bytes now in invoke_handler (3 commands registered) |
-| S2-14 | 前端真实导入流与能力状态 | IN_PROGRESS | started 2026-07-20; removing demo data; wiring Tauri commands |
+| S2-14 | 前端真实导入流与能力状态 | DONE | 6f7f513; 67 frontend tests; 6 Ready formats; real Tauri file picker; browser preview honest |
 | S2-15 | S2 格式矩阵和 CI 总门禁 | TODO | depends on S2-07～S2-14; CI has workflow_dispatch |
 
 ## S3｜全书扫描、上下文与恢复（12/18 DONE, 5 RETRY, 1 TODO）
