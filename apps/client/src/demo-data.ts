@@ -229,44 +229,12 @@ export const demoHits: Hit[] = [
 
 export const demoProviders: ProviderConfig[] = [
   {
-    type: 'openai',
-    label: 'OpenAI 兼容',
-    credentialState: 'missing',
-    endpoint: 'https://api.openai.com/v1',
-    model: '',
-    enabled: false,
-  },
-  {
-    type: 'anthropic',
-    label: 'Anthropic Claude',
-    credentialState: 'missing',
-    endpoint: 'https://api.anthropic.com',
-    model: '',
-    enabled: false,
-  },
-  {
-    type: 'gemini',
-    label: 'Google Gemini',
-    credentialState: 'missing',
-    endpoint: 'https://generativelanguage.googleapis.com',
-    model: '',
-    enabled: false,
-  },
-  {
     type: 'deepseek',
     label: 'DeepSeek',
     credentialState: 'missing',
-    endpoint: 'https://api.deepseek.com',
-    model: '',
-    enabled: false,
-  },
-  {
-    type: 'local',
-    label: '本地模型',
-    credentialState: 'missing',
-    endpoint: 'http://localhost:11434/v1',
-    model: '',
-    enabled: false,
+    endpoint: 'https://api.deepseek.com/v1',
+    model: 'deepseek-chat',
+    enabled: true,
   },
 ];
 

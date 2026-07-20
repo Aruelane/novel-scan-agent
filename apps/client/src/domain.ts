@@ -149,7 +149,7 @@ export interface Hit {
 // ── 设置 ──
 
 /** LLM 提供商 */
-export type ProviderType = 'openai' | 'anthropic' | 'gemini' | 'deepseek' | 'local';
+export type ProviderType = 'deepseek';
 
 export interface ProviderConfig {
   type: ProviderType;
