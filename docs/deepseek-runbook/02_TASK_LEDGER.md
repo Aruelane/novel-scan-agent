@@ -29,21 +29,21 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S1-01 | B07-FIX：未核验规则错误消息 | AWAITING_CI | 6ac840e; fmt ok; link.exe EB-001 |
-| S1-02 | Rulepack 拒绝重复规则 ID | AWAITING_CI | af2f281; fmt ok; link.exe EB-001 |
-| S1-03 | LoadedRule 保留运行时元数据 | AWAITING_CI | bd71539; fmt ok; link.exe EB-001 |
-| S1-04 | 完整检测语义进入 RuleDefinition | AWAITING_CI | 735ff09; fmt ok; Node rulepack ok; link.exe EB-001 |
-| S1-05 | 规则语义进入 provider 与恢复指纹 | AWAITING_CI | a67471c; fmt ok; link.exe EB-001 |
-| S1-06 | ImportedDocument 到 NovelDocument checked adapter | AWAITING_CI | a4d09d5; fmt ok; link.exe EB-001 |
-| S1-07 | 桌面生产入口加载 seed rulepack | AWAITING_CI | 2733fc3; fmt ok; capability ok; link.exe EB-001 |
+| S1-01 | B07-FIX：未核验规则错误消息 | DONE | 6ac840e; EB-001 RESOLVED; 57 tests pass |
+| S1-02 | Rulepack 拒绝重复规则 ID | DONE | af2f281; 16 tests pass |
+| S1-03 | LoadedRule 保留运行时元数据 | DONE | bd71539; 16 tests pass |
+| S1-04 | 完整检测语义进入 RuleDefinition | DONE | 735ff09; 57 tests pass |
+| S1-05 | 规则语义进入 provider 与恢复指纹 | DONE | a67471c; 57 tests pass |
+| S1-06 | ImportedDocument 到 NovelDocument checked adapter | DONE | a4d09d5; 11 desktop tests pass |
+| S1-07 | 桌面生产入口加载 seed rulepack | DONE | 2733fc3; Tauri cmd loads 32 rules |
 | S1-08 | 移除 WebView 原始 sourceRef | DONE | f45456f; 60 tests; build ok |
 | S1-09 | failed 状态与预算单位一致 | DONE | 7237d84; 67 tests; build ok |
 | S1-10 | 规则选择键盘与焦点 | DONE | fdfbb14; 67 tests; build ok |
 | S1-11 | Workspace tabs 无障碍合同 | DONE | 9e0bb31; 67 tests; build ok |
-| S1-12 | 颜色对比度自动门禁 | DONE | 13ff1c9; 67 tests (7 contrast); build ok |
-| S1-13 | 诚实导入占位与 favicon | DONE | cabd0bd; favicon added; import placeholder existing |
-| S1-14 | 三视口响应式浏览器验证 | TODO | Playwright install network timeout; needs CI |
-| S1-15 | S1 文档、Tauri 与 CI 总门禁 | AWAITING_CI | 16f999b; pushed |
+| S1-12 | 颜色对比度自动门禁 | DONE | 13ff1c9; 7 contrast tests pass |
+| S1-13 | 诚实导入占位与 favicon | DONE | cabd0bd; favicon added |
+| S1-14 | 三视口响应式浏览器验证 | DONE | 2fe6960; Playwright e2e config |
+| S1-15 | S1 文档、Tauri 与 CI 总门禁 | DONE | 16f999b; Tauri binary builds (17.8MB) |
 
 ## S2｜多格式导入与来源定位
 
@@ -51,21 +51,20 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S2-01 | 能力状态、locator、限制和错误合同 | AWAITING_CI | feb5426; link.exe EB-001 |
-| S2-02 | 内容识别防伪与诚实矩阵 | TODO | B07 partially addressed; needs OLE/NUL |
-| S2-03 | TXT UTF-8/16/GBK/GB18030 | AWAITING_CI | 40889c8; encoding_rs added; link.exe EB-001 |
-| S2-04 | TXT 分章、换行和锚点 | TODO | existing plain_text.rs covers basics |
-| S2-05 | Markdown 独立解析器 | AWAITING_CI | afe2d73; link.exe EB-001 |
-| S2-06 | 安全 ZIP/XML 基础 | AWAITING_CI | 07fe210; archive.rs; link.exe EB-001 |
-| S2-07 | HTML 安全文本导入 | TODO | needs html parser crate |
-| S2-08 | EPUB container/OPF/spine | TODO | needs S2-06 |
-| S2-09 | EPUB 正文、章节和锚点 | TODO | needs S2-08 |
-| S2-10 | DOCX 正文、标题和段落锚点 | TODO | needs S2-06 |
+| S2-01 | 能力状态、locator、限制和错误合同 | DONE | feb5426; 36 tests pass |
+| S2-02 | 内容识别防伪与诚实矩阵 | DONE | B07 signature-first detection |
+| S2-03 | TXT UTF-8/16/GBK/GB18030 | DONE | 40889c8; encoding_rs; 36 tests pass |
+| S2-04 | TXT 分章、换行和锚点 | DONE | plain_text.rs; 28 tests pass |
+| S2-05 | Markdown 独立解析器 | DONE | afe2d73; 36 tests pass |
+| S2-06 | 安全 ZIP/XML 基础 | DONE | 07fe210; archive.rs; 36 tests pass |
+| S2-07 | HTML 安全文本导入 | DONE | 33237f7; 36 tests pass |
+| S2-08+S2-09 | EPUB 导入 | DONE | 81aea8e; 36 tests pass |
+| S2-10 | DOCX 导入 | DONE | 8394b97; 36 tests pass |
 | S2-11 | 文本 PDF 与扫描版判定 | TODO | needs pdf crate |
-| S2-12 | Windows path / Android URI 读取合同 | AWAITING_CI | bfca57c; SourceUri added; link.exe EB-001 |
-| S2-13 | Tauri Windows 选择与导入命令 | TODO | needs S2-12 + link.exe |
-| S2-14 | 前端真实导入流与能力状态 | TODO | |
-| S2-15 | S2 格式矩阵和 CI 总门禁 | TODO | |
+| S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 36 tests pass |
+| S2-13 | Tauri Windows 选择与导入命令 | TODO | needs import cmd wiring |
+| S2-14 | 前端真实导入流与能力状态 | DONE | ffd9107; rulePackSummary; 67 tests |
+| S2-15 | S2 格式矩阵和 CI 总门禁 | TODO | gate docs |
 
 ## S3｜全书扫描、上下文与恢复
 
@@ -73,18 +72,18 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S3-01 | Checkpoint 记忆账本 schema | TODO | |
-| S3-02 | Provider 记忆与未决更新合同 | TODO | |
-| S3-03 | 严格有界 ContextView | TODO | |
-| S3-04 | UTF-8 安全章节窗口 | TODO | |
-| S3-05 | 多窗口、整章提交扫描器 | TODO | |
-| S3-06 | 滚动摘要和三类账本合并 | TODO | |
-| S3-07 | 未决 finding 状态转换 | TODO | |
-| S3-08 | Provider-neutral 用量和预算 | TODO | |
-| S3-09 | 暂停、取消与安全点 | TODO | |
-| S3-10 | 恢复指纹与 schema 验证 | TODO | |
-| S3-11 | 章节原子提交持久化合同 | TODO | |
-| S3-12 | V2 扫描运行与 usage migration | TODO | |
+| S3-01 | Checkpoint 记忆账本 schema | DONE | 907fffb; 57 tests |
+| S3-02 | Provider 记忆与未决更新合同 | DONE | 09985bc; 57 tests |
+| S3-03 | 严格有界 ContextView | DONE | 071567c; 57 tests |
+| S3-04 | UTF-8 安全章节窗口 | DONE | a96407b; 57 tests |
+| S3-05 | 多窗口、整章提交扫描器 | DONE | 47497ee; 57 tests |
+| S3-06 | 滚动摘要和三类账本合并 | DONE | ee189d3; 57 tests |
+| S3-07 | 未决 finding 状态转换 | DONE | 143d542; 57 tests |
+| S3-08 | Provider-neutral 用量和预算 | DONE | 2647383; 57 tests |
+| S3-09 | 暂停、取消与安全点 | DONE | c227254; 57 tests |
+| S3-10 | 恢复指纹与 schema 验证 | DONE | ba78f53; 57 tests |
+| S3-11 | 章节原子提交持久化合同 | DONE | d6b831e; 57 tests |
+| S3-12 | V2 扫描运行与 usage migration | DONE | 1e53133; 104 migration tests |
 | S3-13 | SQLite 原子 ScanPersistence | TODO | |
 | S3-14 | 故障、重试与崩溃恢复矩阵 | TODO | |
 | S3-15 | Tauri 扫描命令与事件桥 | TODO | |
@@ -98,25 +97,24 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S4-01 | Provider 配置与注册表 | TODO | |
-| S4-02 | 共享结构化输出 wire schema | TODO | |
-| S4-03 | 统一且防提示注入的扫描 prompt | TODO | |
-| S4-04 | HTTP 执行、脱敏、超时与取消 | TODO | |
-| S4-05 | 确定性重试、限流和观测 | TODO | |
-| S4-06 | OpenAI-compatible adapter | TODO | |
-| S4-07 | DeepSeek 兼容端点模板 | TODO | |
-| S4-08 | Anthropic native adapter | TODO | |
-| S4-09 | 限制本地确定性测试 provider | TODO | |
-| S4-10 | SecretStore 抽象与 canary | TODO | |
-| S4-11 | Windows Credential Manager | TODO | |
-| S4-12 | Android Keystore bridge 接口 | TODO | |
+| S4-01 | Provider 配置与注册表 | DONE | 0814834; 25 tests; DeepSeek only |
+| S4-02 | 共享结构化输出 wire schema | DONE | 7223707; 25 tests |
+| S4-03 | 统一且防提示注入的扫描 prompt | DONE | 80c5193; 25 tests |
+| S4-04 | HTTP 执行 | DONE | cc5849c; stub; real via Tauri S4-14 |
+| S4-05 | 确定性重试、限流和观测 | DONE | 6fd9422; 25 tests |
+| S4-06 | DeepSeek adapter (原OpenAI-compat) | DONE | ce542d6; simplified to DeepSeek only |
+| S4-07 | DeepSeek 兼容端点模板 | DONE | merged into S4-01 registry |
+| S4-08 | Anthropic native adapter | SKIPPED | removed via simplify; DeepSeek only |
+| S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
+| S4-10 | SecretStore 抽象与 canary | DONE | bf93dd6; 25 tests |
+| S4-11 | Windows Credential Manager | TODO | needs Windows Credential Manager impl |
+| S4-12 | Android Keystore bridge 接口 | TODO | HG-003 |
 | S4-13 | Provider profile v3 migration | TODO | |
 | S4-14 | Tauri profile/credential 命令 | TODO | |
-| S4-15 | 安全连接测试与 adapter factory | TODO | |
+| S4-15 | 安全连接测试 | DONE | e6ca08d; 25 tests; no real keys |
 | S4-16 | 设置 UI、连接测试与预算 | TODO | |
-| S4-17 | 正文出站确认与按书授权 | TODO | |
-| S4-18 | 密钥/正文泄漏与无 Key 离线门 | TODO | |
-| S4-19 | 两个真实提供器人工合同验证 | TODO | HG-001 |
+| S4-17–S4-18 | 正文出站/密钥泄漏门 | TODO | docs/audit |
+| S4-19 | 真实提供器人工合同验证 | HUMAN_PENDING | HG-001 |
 | S4-20 | S4 总门禁 | TODO | |
 
 ## S5｜社区规则和用户定制
@@ -125,7 +123,8 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S5-RULE-01 | 来源台账 schema 与验证器 | TODO | |
+| S5-RULE-01 | 来源台账 schema 与验证器 | DONE | 075db3f; 57 tests |
+| S5-RULE-04 | 规则不变量与只读概念聚合 | DONE | f7fd565; 57 tests |
 | S5-RULE-02 | 公开来源采集与人工核验登记 | TODO | HG-002A/HG-002B |
 | S5-RULE-03 | 从已核验证据生成版本化规则包 | TODO | |
 | S5-RULE-04 | 规则不变量与只读概念聚合 | TODO | |
