@@ -489,6 +489,49 @@ impl ScanEngine {
         }
         Ok(deduped.into_values().collect())
     }
+
+    /// Apply provider candidate updates to checkpoint findings. Only Suspected and
+    /// PendingConfirmation findings can be updated. Confirmed and Rejected findings
+    /// are terminal.
+    fn apply_candidate_updates(
+        findings: &mut Vec<Finding>,
+        updates: &[ProviderCandidateUpdate],
+        _chapter: &Chapter,
+    ) -> Result<(), ScanError> {
+        for update in updates {
+            let finding = findings
+                .iter_mut()
+                .find(|f| f.id == update.finding_id)
+                .ok_or_else(|| {
+                    ScanError::InvalidInput(format!(
+                        "candidate update references unknown finding '{}'",
+                        update.finding_id
+                    ))
+                })?;
+
+            let new_status = match update.disposition {
+                CandidateDisposition::KeepPending => FindingStatus::PendingConfirmation,
+                CandidateDisposition::Confirm => FindingStatus::Confirmed,
+                CandidateDisposition::Reject => FindingStatus::Rejected,
+            };
+
+            if !allowed_transition(finding.status, new_status) {
+                return Err(ScanError::InvalidInput(format!(
+                    "candidate update for '{}' cannot transition from {:?} to {:?}",
+                    update.finding_id, finding.status, new_status
+                )));
+            }
+
+            finding.status = new_status;
+            if let Some(rationale) = &update.rationale {
+                finding.rationale = rationale.clone();
+            }
+            if new_status == FindingStatus::Rejected {
+                finding.verification_note = Some("rejected by provider update".into());
+            }
+        }
+        Ok(())
+    }
 }
 
 fn validate_task_document(task: &NovelTask, document: &NovelDocument) -> Result<(), ScanError> {

@@ -362,6 +362,26 @@ impl TextSpan {
     }
 }
 
+/// Legal finding state transitions in S3. Only `Suspected` and `PendingConfirmation`
+/// can be updated. `Confirmed` and `Rejected` are terminal for update purposes.
+pub const fn allowed_transition(from: FindingStatus, to: FindingStatus) -> bool {
+    use FindingStatus::*;
+    matches!(
+        (from, to),
+        (Suspected, PendingConfirmation)
+            | (Suspected, Confirmed)
+            | (Suspected, Rejected)
+            | (PendingConfirmation, Confirmed)
+            | (PendingConfirmation, Rejected)
+            | (PendingConfirmation, PendingConfirmation)
+    )
+}
+
+/// Returns the list of finding statuses that a provider candidate update may target.
+pub const fn updatable_statuses() -> &'static [FindingStatus] {
+    &[FindingStatus::Suspected, FindingStatus::PendingConfirmation]
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EvidenceAnchor {
     pub source: ChapterRef,
@@ -552,6 +572,42 @@ mod tests {
         // byte position 5 is in the middle of 'é' (the continuation byte 0xA9)
         let boundary = safe_utf8_boundary(text, 5);
         assert_eq!(&text[boundary..], "éfg");
+    }
+
+    #[test]
+    fn finding_suspected_can_become_confirmed() {
+        assert!(allowed_transition(
+            FindingStatus::Suspected,
+            FindingStatus::Confirmed
+        ));
+    }
+
+    #[test]
+    fn finding_suspected_can_become_rejected() {
+        assert!(allowed_transition(
+            FindingStatus::Suspected,
+            FindingStatus::Rejected
+        ));
+    }
+
+    #[test]
+    fn finding_confirmed_cannot_be_updated() {
+        assert!(!allowed_transition(
+            FindingStatus::Confirmed,
+            FindingStatus::Rejected
+        ));
+        assert!(!allowed_transition(
+            FindingStatus::Confirmed,
+            FindingStatus::PendingConfirmation
+        ));
+    }
+
+    #[test]
+    fn finding_rejected_cannot_be_updated() {
+        assert!(!allowed_transition(
+            FindingStatus::Rejected,
+            FindingStatus::Confirmed
+        ));
     }
 
     #[test]
