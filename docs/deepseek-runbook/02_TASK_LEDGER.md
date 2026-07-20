@@ -124,11 +124,11 @@
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
 | S5-RULE-01 | 来源台账 schema 与验证器 | DONE | 075db3f; 57 tests |
+| S5-RULE-01 | 来源台账 schema 与验证器 | DONE | 075db3f; 57 tests |
 | S5-RULE-04 | 规则不变量与只读概念聚合 | DONE | f7fd565; 57 tests |
-| S5-RULE-02 | 公开来源采集与人工核验登记 | TODO | HG-002A/HG-002B |
-| S5-RULE-03 | 从已核验证据生成版本化规则包 | TODO | |
-| S5-RULE-04 | 规则不变量与只读概念聚合 | TODO | |
-| S5-PRESET-01A | 预设领域模型与三层合并 | TODO | |
+| S5-RULE-02 | 公开来源采集与人工核验登记 | HUMAN_PENDING | HG-002A/HG-002B; SourceRecord+Ruledrovenance types done |
+| S5-RULE-03 | 从已核验证据生成版本化规则包 | HUMAN_PENDING | needs HG-002 evidence |
+| S5-PRESET-01A | 预设领域模型与三层合并 | DONE | RulePreset+merge_rule_config in rules.rs |
 | S5-PRESET-01B | 预设与每书覆盖持久化 | TODO | |
 | S5-PRESET-01C | 扫描选择快照与 Tauri 契约 | TODO | |
 | S5-PRESET-02 | 规则与预设 UI | TODO | |
