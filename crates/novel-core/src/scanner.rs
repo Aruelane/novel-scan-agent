@@ -37,6 +37,8 @@ pub struct ScanCheckpoint {
     pub processed_chapters: Vec<ProcessedChapter>,
     pub findings: Vec<Finding>,
     pub context: ContextSnapshot,
+    #[serde(default)]
+    pub usage_totals: UsageTotals,
 }
 
 impl ScanCheckpoint {
@@ -218,6 +220,7 @@ impl ScanEngine {
                 context: checkpoint.context.clone(),
             };
             let response = self.provider.analyze(&request).await?;
+            checkpoint.usage_totals = checkpoint.usage_totals.add(response.usage);
             let chapter_findings =
                 self.materialize_findings(task, document, chapter, &rules, response.candidates)?;
 

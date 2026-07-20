@@ -146,6 +146,64 @@ impl Default for ScanConfig {
     }
 }
 
+/// Optional usage budget. `None` means unlimited. A value of 0 for any field
+/// means "stop immediately before the next request".
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize, Default)]
+pub struct UsageBudget {
+    #[serde(default)]
+    pub max_requests: Option<u64>,
+    #[serde(default)]
+    pub max_input_units: Option<u64>,
+    #[serde(default)]
+    pub max_output_units: Option<u64>,
+    #[serde(default)]
+    pub max_total_units: Option<u64>,
+}
+
+impl UsageBudget {
+    pub fn is_exhausted(&self, totals: &UsageTotals) -> bool {
+        if let Some(limit) = self.max_requests {
+            if totals.requests >= limit {
+                return true;
+            }
+        }
+        if let Some(limit) = self.max_input_units {
+            if totals.input_units >= limit {
+                return true;
+            }
+        }
+        if let Some(limit) = self.max_output_units {
+            if totals.output_units >= limit {
+                return true;
+            }
+        }
+        if let Some(limit) = self.max_total_units {
+            if totals.input_units.saturating_add(totals.output_units) >= limit {
+                return true;
+            }
+        }
+        false
+    }
+}
+
+/// Cumulative usage counters stored in the checkpoint.
+#[derive(Debug, Clone, Copy, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct UsageTotals {
+    pub requests: u64,
+    pub input_units: u64,
+    pub output_units: u64,
+}
+
+impl UsageTotals {
+    pub fn add(&self, usage: crate::provider::ProviderUsage) -> Self {
+        Self {
+            requests: self.requests.saturating_add(1),
+            input_units: self.input_units.saturating_add(usage.input_units),
+            output_units: self.output_units.saturating_add(usage.output_units),
+        }
+    }
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct NovelTask {
     pub id: String,
