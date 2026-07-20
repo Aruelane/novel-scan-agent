@@ -4,6 +4,7 @@ members = [
   "crates/novel-core",
   "crates/novel-import",
   "crates/novel-rulepack",
+  "crates/novel-providers",
   "apps/desktop/src-tauri",
 ]
 
