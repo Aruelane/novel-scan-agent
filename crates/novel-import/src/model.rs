@@ -130,10 +130,12 @@ pub enum SourceLocator {
         decoded_byte_start: usize,
         decoded_byte_end: usize,
     },
-    /// EPUB spine item + paragraph index.
+    /// EPUB spine item + paragraph index + optional fragment.
     EpubSpine {
         resource: String,
+        fragment: Option<String>,
         paragraph_index: usize,
+        paragraph_count: usize,
     },
 }
 

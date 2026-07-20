@@ -82,6 +82,9 @@ pub(crate) fn import(
     // Extract spine: ordered list of idrefs
     let spine_refs = extract_spine(&opf_xml);
 
+    // Detect navigation resources (epub:type="nav" or properties="nav")
+    let nav_ids = extract_nav_ids(&opf_xml);
+
     // ── 4. Collect XHTML chapters in spine order ──
     let mut chapters: Vec<ImportedChapter> = Vec::new();
     let mut warnings: Vec<ImportWarning> = Vec::new();
@@ -93,7 +96,7 @@ pub(crate) fn import(
         .map(|e| (e.name.as_str(), e.data.as_slice()))
         .collect();
 
-    // Process spine items in order
+    // Process spine items in order, skipping nav-only resources
     if !spine_refs.is_empty() {
         for idref in &spine_refs {
             if chapters.len() >= max_chapters {
@@ -105,27 +108,47 @@ pub(crate) fn import(
                 break;
             }
 
+            // Skip pure navigation resources
+            if nav_ids.contains(idref) {
+                continue;
+            }
+
             if let Some(href) = manifest.get(idref) {
-                // Resolve href relative to OPF path
-                let resolved = resolve_opf_relative(&rootfile_path, href);
+                // Parse fragment from href (e.g., "ch1.xhtml#section1")
+                let (base_href, fragment) = split_fragment(href);
+                let resolved = resolve_opf_relative(&rootfile_path, &base_href);
                 if let Some(data) = entry_map.get(resolved.as_str()) {
                     let text = String::from_utf8_lossy(data);
+                    let para_count = count_paragraphs(&text);
                     if let Ok(mut chs) = import_html(&text, source_name) {
-                        // Stamp EPUB format and resource path on each chapter
-                        for ch in &mut chs {
+                        for (chunk_i, ch) in chs.iter_mut().enumerate() {
                             ch.anchor.format = NovelFormat::Epub;
                             ch.anchor.locator = SourceLocator::EpubSpine {
                                 resource: resolved.clone(),
-                                paragraph_index: 1,
+                                fragment: fragment.clone(),
+                                paragraph_index: chunk_i.saturating_add(1),
+                                paragraph_count: para_count,
                             };
                             ch.index = chapters.len() + 1;
                             if let Some(ref mut ha) = ch.heading_anchor {
                                 ha.format = NovelFormat::Epub;
+                                ha.locator = SourceLocator::EpubSpine {
+                                    resource: resolved.clone(),
+                                    fragment: fragment.clone(),
+                                    paragraph_index: chunk_i.saturating_add(1),
+                                    paragraph_count: para_count,
+                                };
                             }
                             total_character_count += ch.text.chars().count();
                         }
                         chapters.append(&mut chs);
                     }
+                } else {
+                    warnings.push(ImportWarning {
+                        code: crate::ImportWarningCode::NoChapterHeadings,
+                        message: format!("spine 项 {idref} 引用的资源 {resolved} 不存在，已跳过"),
+                        anchor: None,
+                    });
                 }
             }
         }
@@ -149,9 +172,12 @@ pub(crate) fn import(
             if let Ok(mut chs) = import_html(&text, source_name) {
                 for ch in &mut chs {
                     ch.anchor.format = NovelFormat::Epub;
+                    let para_count = count_paragraphs(&text);
                     ch.anchor.locator = SourceLocator::EpubSpine {
                         resource: entry.name.clone(),
+                        fragment: None,
                         paragraph_index: 1,
+                        paragraph_count: para_count,
                     };
                     ch.index = chapters.len() + 1;
                     total_character_count += ch.text.chars().count();
@@ -268,6 +294,52 @@ fn extract_attr(tag: &str, attr_name: &str) -> Option<String> {
     let end = after.find('"')?;
     let value = after[..end].to_owned();
     (!value.is_empty()).then_some(value)
+}
+
+fn extract_nav_ids(opf_xml: &str) -> Vec<String> {
+    let mut ids = Vec::new();
+    // Find manifest items with properties="nav" or epub:type="nav"
+    if let Some(manifest_start) = opf_xml.find("<manifest") {
+        let after_start = &opf_xml[manifest_start..];
+        if let Some(manifest_end) = after_start.find("</manifest>") {
+            let section = &after_start[..manifest_end];
+            for part in section.split("<item") {
+                let is_nav =
+                    part.contains("properties=\"nav\"") || part.contains("epub:type=\"nav\"");
+                if is_nav {
+                    if let Some(id) = extract_attr(part, "id") {
+                        ids.push(id);
+                    }
+                }
+            }
+        }
+    }
+    ids
+}
+
+fn split_fragment(href: &str) -> (String, Option<String>) {
+    if let Some(pos) = href.find('#') {
+        let base = href[..pos].to_owned();
+        let fragment = href[pos + 1..].to_owned();
+        (
+            base,
+            if fragment.is_empty() {
+                None
+            } else {
+                Some(fragment)
+            },
+        )
+    } else {
+        (href.to_owned(), None)
+    }
+}
+
+fn count_paragraphs(html: &str) -> usize {
+    // Count <p> opening tags
+    let lower = html.to_lowercase();
+    lower.matches("<p>").count()
+        + lower.matches("<p ").count()
+        + lower.matches("</p>").count().max(1)
 }
 
 fn resolve_opf_relative(opf_path: &str, href: &str) -> String {
