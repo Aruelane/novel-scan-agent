@@ -57,8 +57,8 @@
 | S2-04 | TXT 分章、换行和锚点 | DONE | feb5426; plain_text.rs; 28 tests pass |
 | S2-05 | Markdown 独立解析器 | DONE | afe2d73; 36 tests pass |
 | S2-06 | 安全 ZIP/XML 基础 | DONE | 07fe210; archive.rs; 36 tests pass |
-| S2-07 | HTML 安全文本导入 | IN_PROGRESS | started 2026-07-20; parser exists at 33237f7; wiring into import_novel |
-| S2-08 | EPUB container/OPF/spine | RETRY | 81aea8e parser exists; capability Pending; import_novel not wired; 原与S2-09合并 |
+| S2-07 | HTML 安全文本导入 | DONE | c00548d; 46 tests pass; 12 HTML-specific; import_novel wired; capability Ready |
+| S2-08 | EPUB container/OPF/spine | IN_PROGRESS | started 2026-07-20; parser exists at 81aea8e; wiring into import_novel |
 | S2-09 | EPUB 正文、章节和锚点 | RETRY | 81aea8e parser exists; capability Pending; import_novel not wired; 原与S2-08合并 |
 | S2-10 | DOCX 正文、标题和段落锚点 | RETRY | 8394b97 parser exists, 36 tests; capability Pending; import_novel not wired |
 | S2-11 | 文本 PDF 与扫描版判定 | RETRY | c265066; lopdf; 38 tests; capability Pending; import_novel not wired |
