@@ -428,6 +428,66 @@ impl ScanEngine {
         }
         Ok(deduped.into_values().collect())
     }
+
+    /// Splits a chapter into bounded windows, scans each, and merges the results.
+    /// When the chapter fits within `window_chars`, it is scanned as a single
+    /// window; otherwise it is split on safe UTF-8 boundaries.
+    async fn scan_chapter_windows(
+        &self,
+        task: &NovelTask,
+        document: &NovelDocument,
+        chapter: &Chapter,
+        rules: &[RuleContext],
+        context: &ContextSnapshot,
+        window_chars: usize,
+    ) -> Result<Vec<Finding>, ScanError> {
+        let windows = crate::chunk_text(&chapter.text, window_chars);
+        let mut all_findings = Vec::new();
+
+        for window_text in windows {
+            // Create a temporary chapter-like window with a sub-range context
+            let start_byte = window_text.as_ptr() as usize - chapter.text.as_ptr() as usize;
+            let end_byte = start_byte + window_text.len();
+
+            let window_chapter = Chapter::new(
+                format!("{}/{}", chapter.id, start_byte),
+                chapter.ordinal,
+                format!("{} [{}-{}]", chapter.title, start_byte, end_byte),
+                window_text.to_owned(),
+                chapter.locator.clone(),
+            );
+
+            let request = InferenceRequest {
+                task_id: task.id.clone(),
+                document_id: document.id.clone(),
+                chapter: window_chapter,
+                rules: rules.to_vec(),
+                context: context.clone(),
+            };
+
+            let response = self.provider.analyze(&request).await?;
+            let window_findings =
+                self.materialize_findings(task, document, chapter, rules, response.candidates)?;
+            all_findings.extend(window_findings);
+        }
+
+        // Deduplicate across windows by finding ID
+        let mut deduped: std::collections::BTreeMap<String, Finding> =
+            std::collections::BTreeMap::new();
+        for finding in all_findings {
+            if let Some(existing) = deduped.get(&finding.id) {
+                if existing != &finding {
+                    return Err(ScanError::InvalidInput(format!(
+                        "conflicting window results for finding id '{}'",
+                        finding.id
+                    )));
+                }
+            } else {
+                deduped.insert(finding.id.clone(), finding);
+            }
+        }
+        Ok(deduped.into_values().collect())
+    }
 }
 
 fn validate_task_document(task: &NovelTask, document: &NovelDocument) -> Result<(), ScanError> {
