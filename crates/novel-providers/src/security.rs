@@ -16,7 +16,7 @@ mod tests {
         let profile = ProviderProfile {
             id: "test".into(),
             display_name: "Test".into(),
-            protocol: crate::config::ProviderProtocol::OpenAiCompatible,
+            protocol: crate::config::ProviderProtocol::DeepSeek,
             base_url: "https://example.com".into(),
             model_id: "test-v1".into(),
             max_requests_per_minute: None,

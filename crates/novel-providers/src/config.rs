@@ -4,8 +4,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ProviderProtocol {
-    OpenAiCompatible,
-    AnthropicNative,
+    DeepSeek,
     DeterministicTest,
 }
 
@@ -113,7 +112,7 @@ mod tests {
         let profile = ProviderProfile {
             id: "test".into(),
             display_name: "Test".into(),
-            protocol: ProviderProtocol::OpenAiCompatible,
+            protocol: ProviderProtocol::DeepSeek,
             base_url: "https://example.com".into(),
             model_id: "test-v1".into(),
             max_requests_per_minute: None,
