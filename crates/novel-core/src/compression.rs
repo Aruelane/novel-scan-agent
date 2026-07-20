@@ -16,7 +16,7 @@ pub const CONTEXT_SNAPSHOT_SCHEMA_VERSION: u32 = 1;
 // pending_confirmation finding must reference exact source anchors
 // reconstructed from `NovelDocument.chapters[*].text`.
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct EntityMemory {
     pub entity_id: String,
     pub display_name: String,
@@ -70,6 +70,7 @@ pub fn memory_id(prefix: &str, seed: &str) -> String {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ContextSnapshot {
+    #[serde(default)]
     pub schema_version: u32,
     pub revision: u64,
     pub processed_chapter_ids: Vec<String>,
@@ -147,7 +148,7 @@ impl ContextSnapshot {
     }
 }
 
-#[derive(Debug, Clone, Default)]
+#[derive(Debug, Clone)]
 pub struct CompressionRequest<'a> {
     pub previous: &'a ContextSnapshot,
     pub chapter: &'a Chapter,
@@ -183,6 +184,13 @@ impl std::error::Error for CompressionError {}
 pub trait ContextCompressor: Send + Sync {
     fn compress<'a>(&'a self, request: CompressionRequest<'a>) -> CompressionFuture<'a>;
 }
+
+/// A statically empty memory delta for use as a default reference.
+pub static EMPTY_MEMORY_DELTA: crate::provider::MemoryDelta = crate::provider::MemoryDelta {
+    entities: Vec::new(),
+    relationships: Vec::new(),
+    events: Vec::new(),
+};
 
 /// Merges provider-supplied memory delta into the snapshot. Entities,
 /// relationships, and events are upserted by stable ID. Duplicate IDs with
@@ -368,7 +376,7 @@ mod tests {
             chapter: &chapter,
             chapter_findings: &[],
             budget_chars: 6,
-            ..Default::default()
+            memory_delta: &EMPTY_MEMORY_DELTA,
         }))
         .unwrap();
 

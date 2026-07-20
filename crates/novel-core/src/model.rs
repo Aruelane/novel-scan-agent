@@ -504,20 +504,18 @@ pub struct Finding {
 /// Never splits multi-byte code points. Returns 0 for empty or 0-position.
 pub fn safe_utf8_boundary(text: &str, position: usize) -> usize {
     let position = position.min(text.len());
-    if position == 0 {
-        return 0;
+    if position == 0 || text.is_char_boundary(position) {
+        return position;
     }
     let bytes = text.as_bytes();
-    let mut boundary = position;
-    // Walk back at most 3 bytes to find a non-continuation byte
-    let steps = (position - 1).saturating_sub(3.min(position));
-    for offset in (steps..=position - 1).rev() {
+    // Walk back at most 3 bytes to find the closest non-continuation byte
+    let steps = position.saturating_sub(4).max(0);
+    for offset in (steps..position).rev() {
         if bytes[offset] & 0xC0 != 0x80 {
-            boundary = offset + 1;
-            break;
+            return offset;
         }
     }
-    boundary.min(position)
+    0
 }
 
 /// Splits `text` into chunks of at most `max_chars` Unicode scalar characters,
@@ -639,12 +637,13 @@ mod tests {
 
     #[test]
     fn safe_boundary_does_not_split_multi_byte_utf8() {
-        // "é" is 2 bytes: 0xC3 0xA9
+        // "é" is 2 bytes: 0xC3 0xA9. "abcéfg": a=0, b=1, c=2, é=3,4, f=5, g=6
         let text = "abcéfg";
-        // byte position 4 is right after 'c', at start of 'é'
-        assert_eq!(safe_utf8_boundary(text, 4), 4);
-        // byte position 5 is in the middle of 'é' (the continuation byte 0xA9)
-        let boundary = safe_utf8_boundary(text, 5);
+        // byte 3 is start of 'é'
+        assert_eq!(safe_utf8_boundary(text, 3), 3);
+        // byte 4 is middle of 'é' → should snap to 3
+        let boundary = safe_utf8_boundary(text, 4);
+        assert_eq!(boundary, 3);
         assert_eq!(&text[boundary..], "éfg");
     }
 

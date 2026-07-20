@@ -20,9 +20,9 @@ pub use compression::{
 };
 pub use model::*;
 pub use provider::{
-    DeterministicTestProvider, InferenceRequest, ModelProvider, PatternRule, ProviderCandidate,
-    ProviderError, ProviderEvidenceRange, ProviderFuture, ProviderResponse, ProviderUsage,
-    RuleContext,
+    CandidateDisposition, DeterministicTestProvider, InferenceRequest, MemoryDelta, ModelProvider,
+    PatternRule, ProviderCandidate, ProviderCandidateUpdate, ProviderError, ProviderEvidenceRange,
+    ProviderFuture, ProviderResponse, ProviderUsage, RuleContext,
 };
 pub use scanner::{
     CheckpointStore, CheckpointStoreError, InMemoryCheckpointStore, ProcessedChapter,

@@ -7,10 +7,12 @@ use std::{
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    stable_fingerprint, AlertLevel, Chapter, ChapterRef, CompressionError, CompressionRequest,
-    ConfirmationScope, ContextCompressor, ContextSnapshot, DetectionMode, EvidenceAnchor, Finding,
-    FindingStatus, ModelProvider, NovelDocument, NovelTask, ProviderCandidate, ProviderError,
-    ProviderStamp, RuleCategory, RuleContext, RuleDefinition, RuleSelection, TaskStatus, TextSpan,
+    allowed_transition, stable_fingerprint, AlertLevel, CandidateDisposition, Chapter, ChapterRef,
+    CompressionError, CompressionRequest, ConfirmationScope, ContextCompressor, ContextSnapshot,
+    DetectionMode, EvidenceAnchor, Finding, FindingStatus, InferenceRequest, ModelProvider,
+    NovelDocument, NovelTask, ProviderCandidate, ProviderCandidateUpdate, ProviderError,
+    ProviderStamp, RuleCategory, RuleContext, RuleDefinition, RuleSelection, StopReason,
+    TaskStatus, TextSpan, UsageTotals, CONTEXT_SNAPSHOT_SCHEMA_VERSION,
 };
 
 pub const CHECKPOINT_SCHEMA_VERSION: u32 = 2;
@@ -63,6 +65,8 @@ impl ScanCheckpoint {
             processed_chapters: Vec::new(),
             findings: Vec::new(),
             context: ContextSnapshot::default(),
+            usage_totals: UsageTotals::default(),
+            stop_reason: None,
         }
     }
 }
@@ -235,7 +239,7 @@ impl ScanEngine {
                     chapter,
                     chapter_findings: &chapter_findings,
                     budget_chars: task.config.context_budget_chars,
-                    ..Default::default()
+                    memory_delta: &crate::compression::EMPTY_MEMORY_DELTA,
                 })
                 .await?;
             // These fields are checkpoint invariants, even when a provider-backed

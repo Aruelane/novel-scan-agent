@@ -150,7 +150,7 @@ pub fn validate_provider_response_shape(response: &ProviderResponse) -> Result<(
         if candidate.rule_id.is_empty() {
             return Err(ProviderError::new(
                 "SHAPE_INVALID",
-                "candidate has empty rule_id".into(),
+                String::from("candidate has empty rule_id"),
                 false,
             ));
         }
@@ -180,7 +180,7 @@ pub fn validate_provider_response_shape(response: &ProviderResponse) -> Result<(
             if range.utf8_byte_start >= range.utf8_byte_end {
                 return Err(ProviderError::new(
                     "SHAPE_INVALID",
-                    "evidence range start must be less than end".into(),
+                    String::from("evidence range start must be less than end"),
                     false,
                 ));
             }
