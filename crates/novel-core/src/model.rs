@@ -406,6 +406,49 @@ pub struct Finding {
     pub provider: ProviderStamp,
 }
 
+/// Returns the largest valid UTF-8 byte boundary ≤ `position` in `text`.
+/// Never splits multi-byte code points. Returns 0 for empty or 0-position.
+pub fn safe_utf8_boundary(text: &str, position: usize) -> usize {
+    let position = position.min(text.len());
+    if position == 0 {
+        return 0;
+    }
+    let bytes = text.as_bytes();
+    let mut boundary = position;
+    // Walk back at most 3 bytes to find a non-continuation byte
+    let steps = (position - 1).saturating_sub(3.min(position));
+    for offset in (steps..=position - 1).rev() {
+        if bytes[offset] & 0xC0 != 0x80 {
+            boundary = offset + 1;
+            break;
+        }
+    }
+    boundary.min(position)
+}
+
+/// Splits `text` into chunks of at most `max_chars` Unicode scalar characters,
+/// each starting and ending on a valid UTF-8 byte boundary.
+pub fn chunk_text(text: &str, max_chars: usize) -> Vec<&str> {
+    let mut chunks = Vec::new();
+    let mut start = 0usize;
+    let mut char_count = 0usize;
+
+    for (byte_offset, _ch) in text.char_indices() {
+        char_count += 1;
+        if char_count > max_chars {
+            let boundary = safe_utf8_boundary(text, byte_offset);
+            chunks.push(&text[start..boundary]);
+            start = boundary;
+            char_count = 1;
+        }
+    }
+    if start < text.len() {
+        chunks.push(&text[start..]);
+    }
+
+    chunks
+}
+
 pub(crate) fn line_number_at(text: &str, byte_position: usize) -> u32 {
     let clamped = byte_position.min(text.len());
     1 + text.as_bytes()[..clamped]
@@ -490,6 +533,35 @@ mod tests {
         }
         assert_eq!(AlertLevel::from_ui_scale(0), None);
         assert_eq!(AlertLevel::from_ui_scale(6), None);
+    }
+
+    #[test]
+    fn safe_boundary_preserves_ascii_positions() {
+        let text = "hello world";
+        assert_eq!(safe_utf8_boundary(text, 5), 5);
+        assert_eq!(safe_utf8_boundary(text, 0), 0);
+        assert_eq!(safe_utf8_boundary(text, 999), text.len());
+    }
+
+    #[test]
+    fn safe_boundary_does_not_split_multi_byte_utf8() {
+        // "é" is 2 bytes: 0xC3 0xA9
+        let text = "abcéfg";
+        // byte position 4 is right after 'c', at start of 'é'
+        assert_eq!(safe_utf8_boundary(text, 4), 4);
+        // byte position 5 is in the middle of 'é' (the continuation byte 0xA9)
+        let boundary = safe_utf8_boundary(text, 5);
+        assert_eq!(&text[boundary..], "éfg");
+    }
+
+    #[test]
+    fn chunk_text_respects_max_chars() {
+        let text = "1234567890"; // 10 ASCII chars
+        let chunks = chunk_text(text, 4);
+        assert_eq!(chunks.len(), 3);
+        assert_eq!(chunks[0], "1234");
+        assert_eq!(chunks[1], "5678");
+        assert_eq!(chunks[2], "90");
     }
 
     #[test]
