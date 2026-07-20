@@ -7,6 +7,7 @@
 //! through adapters while the same scan and evidence rules run everywhere.
 
 pub mod compression;
+pub mod context_view;
 pub mod model;
 pub mod provider;
 pub mod scanner;
