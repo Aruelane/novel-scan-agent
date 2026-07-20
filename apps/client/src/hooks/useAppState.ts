@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from 'react';
+import { isTauri } from '@tauri-apps/api/core';
 import type {
   Book,
   Rule,
@@ -18,19 +19,24 @@ import {
   demoSettings,
 } from '../demo-data';
 import { loadImportCapabilities } from '../services/importCapabilities';
+import { importBookBytes } from '../services/importBooks';
 
-/** 管理整个前端演示状态的 hook */
+/** Manages the full application state, with real data when Tauri is available. */
 export function useAppState() {
-  const [books, setBooks] = useState<Book[]>(demoBooks);
+  const isNative = isTauri();
+
+  // Start empty in Tauri, use demos only in browser preview
+  const [books, setBooks] = useState<Book[]>(isNative ? [] : demoBooks);
   const [rules, setRules] = useState<Rule[]>(demoRules);
-  const [jobs, setJobs] = useState<ScanJob[]>(demoScanJobs);
-  const [hits, setHits] = useState<Hit[]>(demoHits);
+  const [jobs, setJobs] = useState<ScanJob[]>(isNative ? [] : demoScanJobs);
+  const [hits, setHits] = useState<Hit[]>(isNative ? [] : demoHits);
   const [settings, setSettings] = useState<AppSettings>(demoSettings);
   const [formatCapabilities, setFormatCapabilities] = useState<FormatInfo[]>(
     () => ALL_FORMATS.map(format => ({ ...format, extensions: [...format.extensions] })),
   );
   const [formatCapabilitiesLoading, setFormatCapabilitiesLoading] = useState(true);
   const [formatCapabilitiesNotice, setFormatCapabilitiesNotice] = useState<string | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -47,15 +53,34 @@ export function useAppState() {
     };
   }, []);
 
-  // 桌面端：当前选中的书籍 ID
-  const [selectedBookId, setSelectedBookId] = useState<string | null>('book-001');
-  // 桌面端：工作区当前标签页
-  const [activeTab, setActiveTab] = useState<WorkspaceTab>('scan');
+  // ── UI state ──
 
-  // 移动端：当前面板
+  const [selectedBookId, setSelectedBookId] = useState<string | null>(
+    isNative ? null : 'book-001',
+  );
+  const [activeTab, setActiveTab] = useState<WorkspaceTab>('scan');
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>('workspace');
 
-  // ── 操作 ──
+  // ── Operations ──
+
+  /** Import a book via Tauri native dialog or direct file bytes. */
+  const importBook = useCallback(async (sourceName: string, bytes: Uint8Array) => {
+    setImportError(null);
+    try {
+      const result = await importBookBytes(sourceName, bytes);
+      setBooks(prev => [result.book, ...prev]);
+      if (!selectedBookId) {
+        setSelectedBookId(result.book.id);
+      }
+      return result.summary;
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '导入失败';
+      setImportError(message);
+      throw err;
+    }
+  }, [selectedBookId]);
+
+  const clearImportError = useCallback(() => setImportError(null), []);
 
   const toggleRule = useCallback((ruleId: string) => {
     setRules(prev => prev.map(r =>
@@ -101,11 +126,14 @@ export function useAppState() {
     formatCapabilities,
     formatCapabilitiesLoading,
     formatCapabilitiesNotice,
+    importError,
     selectedBookId,
     activeTab,
     mobilePanel,
     setActiveTab,
     setMobilePanel,
+    importBook,
+    clearImportError,
     toggleRule,
     setRuleSeverity,
     pauseScan,

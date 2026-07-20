@@ -31,11 +31,14 @@ export default function App() {
           formatCapabilities={state.formatCapabilities}
           formatCapabilitiesLoading={state.formatCapabilitiesLoading}
           formatCapabilitiesNotice={state.formatCapabilitiesNotice}
+          importError={state.importError}
           onTabChange={state.setActiveTab}
           onToggleRule={state.toggleRule}
           onSetRuleSeverity={state.setRuleSeverity}
           onPauseScan={state.pauseScan}
           onResumeScan={state.resumeScan}
+          onImportBook={state.importBook}
+          onClearImportError={state.clearImportError}
           className={mobileClass('workspace')}
         />
         <EvidencePanel

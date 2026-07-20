@@ -23,11 +23,14 @@ interface WorkspaceProps {
   formatCapabilities: FormatInfo[];
   formatCapabilitiesLoading: boolean;
   formatCapabilitiesNotice: string | null;
+  importError: string | null;
   onTabChange: (tab: WorkspaceTab) => void;
   onToggleRule: (ruleId: string) => void;
   onSetRuleSeverity: (ruleId: string, severity: 1 | 2 | 3 | 4 | 5) => void;
   onPauseScan: (jobId: string) => void;
   onResumeScan: (jobId: string) => void;
+  onImportBook: (sourceName: string, bytes: Uint8Array) => Promise<string>;
+  onClearImportError: () => void;
   className?: string;
 }
 
@@ -48,11 +51,14 @@ export function Workspace({
   formatCapabilities,
   formatCapabilitiesLoading,
   formatCapabilitiesNotice,
+  importError,
   onTabChange,
   onToggleRule,
   onSetRuleSeverity,
   onPauseScan,
   onResumeScan,
+  onImportBook,
+  onClearImportError,
   className,
 }: WorkspaceProps) {
   const selectedBook = books.find(b => b.id === selectedBookId) ?? null;
@@ -129,6 +135,9 @@ export function Workspace({
               formats={formatCapabilities}
               loading={formatCapabilitiesLoading}
               notice={formatCapabilitiesNotice}
+              importError={importError}
+              onImport={onImportBook}
+              onClearError={onClearImportError}
             />
           )}
 

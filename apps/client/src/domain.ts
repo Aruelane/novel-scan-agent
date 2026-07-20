@@ -36,13 +36,13 @@ export interface FormatInfo {
 
 /** 所有支持格式的列表 */
 export const ALL_FORMATS: FormatInfo[] = [
-  { format: 'txt',       label: 'TXT 纯文本',        extensions: ['.txt'],                        status: 'ready', note: '可读取 UTF-8 与带 BOM 的 UTF-16；GBK/GB18030 暂会给出明确提示' },
-  { format: 'markdown',  label: 'Markdown',          extensions: ['.md', '.markdown', '.mdown', '.mkd'], status: 'ready', note: '可按标题或常见章节名切分，并保留原文行号' },
-  { format: 'epub',      label: 'EPUB 电子书',       extensions: ['.epub'],                       status: 'pending', note: '目录、spine 与 CFI 锚点接入中' },
-  { format: 'pdf',       label: 'PDF 文档',          extensions: ['.pdf'],                        status: 'pending', note: '文本层优先；扫描版将单独标注 OCR' },
-  { format: 'docx',      label: 'Word 文档',         extensions: ['.docx'],                       status: 'pending', note: '标题层级、段落与脚注解析接入中' },
+  { format: 'txt',       label: 'TXT 纯文本',        extensions: ['.txt'],                        status: 'ready', note: '支持 UTF-8/16/GBK/GB18030，按章节标题切分' },
+  { format: 'markdown',  label: 'Markdown',          extensions: ['.md', '.markdown', '.mdown', '.mkd'], status: 'ready', note: '支持 ATX/Setext 标题与常见网文章节切分' },
+  { format: 'html',      label: 'HTML 网页',         extensions: ['.html', '.htm', '.xhtml'],     status: 'ready', note: '安全过滤脚本/样式，按 h1–h3 标题分章' },
+  { format: 'epub',      label: 'EPUB 电子书',       extensions: ['.epub'],                       status: 'ready', note: '支持 OPF spine 排序与 XHTML 正文提取' },
+  { format: 'docx',      label: 'Word 文档',         extensions: ['.docx'],                       status: 'ready', note: '支持 Heading 样式分章与段落锚点' },
+  { format: 'pdf',       label: 'PDF 文档',          extensions: ['.pdf'],                        status: 'ready', note: '文本型 PDF 逐页提取；扫描版将明确提示 OCR' },
   { format: 'doc',       label: '旧版 Word 文档',    extensions: ['.doc'],                        status: 'unsupported', note: '请另存为 DOCX、TXT 或 PDF' },
-  { format: 'html',      label: 'HTML 网页',          extensions: ['.html', '.htm', '.xhtml'],      status: 'pending', note: '正文抽取、标题层级与页面锚点接入中' },
   { format: 'mobi',      label: 'MOBI 电子书',        extensions: ['.mobi', '.prc'],                status: 'pending', note: '正文与目录解析接入中' },
   { format: 'azw3',      label: 'AZW3 (Kindle)',     extensions: ['.azw3', '.azw'],                status: 'pending', note: '仅计划支持无 DRM 文件' },
   { format: 'zip',       label: 'ZIP 压缩包',         extensions: ['.zip'],                        status: 'pending', note: '后续会安全解压并识别包内内容' },

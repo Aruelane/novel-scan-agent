@@ -1,3 +1,5 @@
+import { useState, useRef } from 'react';
+import { isTauri } from '@tauri-apps/api/core';
 import type { FormatInfo, FormatStatus } from '../domain';
 import './ImportPanel.css';
 
@@ -17,22 +19,103 @@ interface ImportPanelProps {
   formats: FormatInfo[];
   loading: boolean;
   notice: string | null;
+  importError: string | null;
+  onImport: (sourceName: string, bytes: Uint8Array) => Promise<string>;
+  onClearError: () => void;
 }
 
-export function ImportPanel({ formats, loading, notice }: ImportPanelProps) {
+export function ImportPanel({
+  formats,
+  loading,
+  notice,
+  importError,
+  onImport,
+  onClearError,
+}: ImportPanelProps) {
+  const [importing, setImporting] = useState(false);
+  const [summary, setSummary] = useState<string | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const isNative = isTauri();
+
+  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setImporting(true);
+    setSummary(null);
+    onClearError();
+
+    try {
+      const buffer = await file.arrayBuffer();
+      const bytes = new Uint8Array(buffer);
+      const result = await onImport(file.name, bytes);
+      setSummary(result);
+    } catch {
+      // error is handled via importError prop
+    } finally {
+      setImporting(false);
+      // Reset input so the same file can be re-selected
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleDropzoneClick = () => {
+    if (isNative && !importing) {
+      fileInputRef.current?.click();
+    }
+  };
+
   return (
     <section className="import-panel" aria-label="导入小说文件">
       <h3 className="import-panel__title">把小说交给我</h3>
       <p className="import-panel__desc">
-        不限于 TXT。这里会逐步接收电子书、文档和压缩包，并如实告诉你哪些格式现在能读。
+        支持 TXT、Markdown、HTML、EPUB、DOCX 和文本型 PDF。
+        选择文件后自动解析章节，为扫描做好准备。
       </p>
 
+      {/* File input (hidden, triggered by dropzone click) */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".txt,.md,.markdown,.mdown,.mkd,.html,.htm,.xhtml,.epub,.docx,.pdf"
+        onChange={handleFileChange}
+        style={{ display: 'none' }}
+        aria-hidden="true"
+      />
+
+      {/* Dropzone */}
       <div
-        className="import-dropzone"
-        aria-label="文件选择区域，当前为界面演示模式，暂未连接桌面或 Android 外壳"
-        aria-disabled="true"
+        className={`import-dropzone${isNative ? ' import-dropzone--active' : ''}${importing ? ' import-dropzone--busy' : ''}`}
+        aria-label={
+          isNative
+            ? '点击选择小说文件'
+            : '文件选择区域，当前为浏览器预览模式'
+        }
+        role={isNative ? 'button' : undefined}
+        tabIndex={isNative ? 0 : undefined}
+        aria-disabled={!isNative || importing}
+        onClick={handleDropzoneClick}
+        onKeyDown={(event) => {
+          if (isNative && (event.key === 'Enter' || event.key === ' ')) {
+            event.preventDefault();
+            handleDropzoneClick();
+          }
+        }}
         onDragOver={(event) => { event.preventDefault(); }}
-        onDrop={(event) => { event.preventDefault(); }}
+        onDrop={(event) => {
+          event.preventDefault();
+          if (!isNative || importing) return;
+          const file = event.dataTransfer.files?.[0];
+          if (file && fileInputRef.current) {
+            // Manual trigger since we can't set FileList directly
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            fileInputRef.current.files = dt.files;
+            fileInputRef.current.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }}
       >
         <div className="import-dropzone__icon" aria-hidden="true">
           <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -41,14 +124,47 @@ export function ImportPanel({ formats, loading, notice }: ImportPanelProps) {
             <line x1="12" y1="3" x2="12" y2="15" />
           </svg>
         </div>
-        <p className="import-dropzone__text">
-          导入功能将在 S2 多格式解析完成后接入
-        </p>
-        <p className="import-dropzone__hint">
-          当前支持 TXT 与 Markdown 的本地导入能力已进入核心，桌面与 Android 外壳的导入命令将在后续版本连接。
-        </p>
+        {importing ? (
+          <p className="import-dropzone__text">正在导入…</p>
+        ) : isNative ? (
+          <>
+            <p className="import-dropzone__text">
+              点击选择文件，或拖拽小说文件到此处
+            </p>
+            <p className="import-dropzone__hint">
+              支持 TXT / Markdown / HTML / EPUB / DOCX / PDF
+            </p>
+          </>
+        ) : (
+          <>
+            <p className="import-dropzone__text">
+              导入功能在桌面应用中可用
+            </p>
+            <p className="import-dropzone__hint">
+              当前为浏览器预览，未连接桌面外壳。请使用 Tauri 桌面版进行真实导入。
+            </p>
+          </>
+        )}
       </div>
 
+      {/* Import result */}
+      {summary && (
+        <div className="import-result" role="status" aria-live="polite">
+          <pre className="import-result__text">{summary}</pre>
+        </div>
+      )}
+
+      {/* Import error */}
+      {importError && (
+        <div className="import-error" role="alert">
+          <p className="import-error__text">{importError}</p>
+          <button className="import-error__dismiss" onClick={onClearError} aria-label="关闭错误提示">
+            ✕
+          </button>
+        </div>
+      )}
+
+      {/* Format capability table */}
       <div className="import-formats" aria-label="文件格式接入状态">
         <div className="import-formats__heading">
           <h4 className="import-formats__title">格式接入状态</h4>

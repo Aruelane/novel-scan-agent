@@ -16,14 +16,14 @@ import {
 } from '../domain';
 
 describe('ALL_FORMATS', () => {
-  it('only marks TXT and Markdown ready in this stage', () => {
+  it('marks all 6 implemented formats ready', () => {
     const ready = ALL_FORMATS.filter(format => format.status === 'ready').map(format => format.format);
-    expect(ready).toEqual(['txt', 'markdown']);
+    expect(ready).toEqual(['txt', 'markdown', 'html', 'epub', 'docx', 'pdf']);
   });
 
   it('keeps recognised but unfinished formats pending', () => {
     const pending = ALL_FORMATS.filter(format => format.status === 'pending').map(format => format.format);
-    expect(pending).toEqual(['epub', 'pdf', 'docx', 'html', 'mobi', 'azw3', 'zip', '7z']);
+    expect(pending).toEqual(['mobi', 'azw3', 'zip', '7z']);
   });
 
   it('does not claim legacy DOC support', () => {
