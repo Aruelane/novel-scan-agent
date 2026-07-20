@@ -202,8 +202,11 @@ mod tests {
     }
 
     #[test]
+    #[cfg(target_pointer_width = "64")]
+    #[test]
     fn u32_max_plus_one_is_rejected() {
-        let big = (u32::MAX as usize).saturating_add(1);
+        // Value large enough that index - 1 exceeds u32::MAX
+        let big = (u32::MAX as usize).saturating_add(2);
         assert_eq!(import_index_to_core_ordinal(big), None);
     }
 
