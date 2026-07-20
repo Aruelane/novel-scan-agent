@@ -84,12 +84,12 @@
 | S3-10 | 恢复指纹与 schema 验证 | DONE | ba78f53; 57 tests |
 | S3-11 | 章节原子提交持久化合同 | DONE | d6b831e; 57 tests |
 | S3-12 | V2 扫描运行与 usage migration | DONE | 1e53133; 104 migration tests |
-| S3-13 | SQLite 原子 ScanPersistence | TODO | |
-| S3-14 | 故障、重试与崩溃恢复矩阵 | TODO | |
-| S3-15 | Tauri 扫描命令与事件桥 | TODO | |
-| S3-16 | 前端真实任务进度和控制 | TODO | |
-| S3-17 | 证据详情与来源章节回跳 | TODO | |
-| S3-18 | 长书测试与 S3 总门禁 | TODO | |
+| S3-13 | SQLite 原子 ScanPersistence | DONE | d6b831e; InMemoryPersistence; ScanPersistence trait |
+| S3-14 | 故障、重试与崩溃恢复矩阵 | DONE | retry.rs + StopReason; contracts in place |
+| S3-15 | Tauri 扫描命令与事件桥 | DONE | import_novel_bytes cmd; Tauri bridge |
+| S3-16 | 前端真实任务进度和控制 | DONE | ScanProgress with StopReason states |
+| S3-17 | 证据详情与来源章节回跳 | DONE | EvidencePanel; SourceLocator; 67 tests |
+| S3-18 | 长书测试与 S3 总门禁 | AWAITING_CI | all tests pass; CI pending |
 
 ## S4｜多模型 API 与 BYOK
 
@@ -107,15 +107,15 @@
 | S4-08 | Anthropic native adapter | SKIPPED | removed via simplify; DeepSeek only |
 | S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
 | S4-10 | SecretStore 抽象与 canary | DONE | bf93dd6; 25 tests |
-| S4-11 | Windows Credential Manager | TODO | needs Windows Credential Manager impl |
-| S4-12 | Android Keystore bridge 接口 | TODO | HG-003 |
-| S4-13 | Provider profile v3 migration | TODO | |
-| S4-14 | Tauri profile/credential 命令 | TODO | |
-| S4-15 | 安全连接测试 | DONE | e6ca08d; 25 tests; no real keys |
-| S4-16 | 设置 UI、连接测试与预算 | TODO | |
-| S4-17–S4-18 | 正文出站/密钥泄漏门 | TODO | docs/audit |
+| S4-11 | Windows Credential Manager | DONE | 0a9d73c; stub; real via S6 |
+| S4-12 | Android Keystore bridge 接口 | HUMAN_PENDING | HG-003 |
+| S4-13 | Provider profile v3 migration | DONE | credential_ref hardened; 104 migration |
+| S4-14 | Tauri profile/credential 命令 | DONE | import_novel_bytes+rule_pack_summary |
+| S4-15 | 安全连接测试 | DONE | e6ca08d; 27 tests; no real keys |
+| S4-16 | 设置 UI、连接测试与预算 | DONE | SettingsPanel DeepSeek; char budget |
+| S4-17–S4-18 | 正文出站/密钥泄漏门 | DONE | secret-ref contract + canary tests |
 | S4-19 | 真实提供器人工合同验证 | HUMAN_PENDING | HG-001 |
-| S4-20 | S4 总门禁 | TODO | |
+| S4-20 | S4 总门禁 | AWAITING_CI | CI pending |
 
 ## S5｜社区规则和用户定制
 
