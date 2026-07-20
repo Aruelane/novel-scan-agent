@@ -48,6 +48,7 @@ pub fn import_novel(request: ImportRequest<'_>) -> Result<ImportedDocument, Impo
     match capability.status {
         CapabilityStatus::Ready => match format {
             NovelFormat::PlainText | NovelFormat::Markdown => plain_text::import(request, format),
+            NovelFormat::Html => html::import(request, format),
             _ => Err(ImportError::UnsupportedFormat {
                 source_name: request.source_name.to_owned(),
                 detail: format!(

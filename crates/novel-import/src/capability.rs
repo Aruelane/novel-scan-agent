@@ -105,9 +105,9 @@ const CAPABILITIES: &[FormatCapability] = &[
         label: "HTML",
         extensions: &["html", "htm", "xhtml"],
         media_types: &["text/html", "application/xhtml+xml"],
-        status: CapabilityStatus::Pending,
-        detail: "已识别格式，正文抽取、标题层级和 DOM 锚点将在后续阶段接入",
-        source_locator: "标题 + DOM 路径/文本范围",
+        status: CapabilityStatus::Ready,
+        detail: "支持本地 HTML 正文/标题导入，自动过滤脚本和样式",
+        source_locator: "标题 + 原文行号 + 解码后 UTF-8 字节范围",
     },
     FormatCapability {
         format: NovelFormat::Mobi,

@@ -183,6 +183,7 @@ pub struct ImportedChapter {
 pub enum ImportWarningCode {
     NoChapterHeadings,
     FrontMatterDetected,
+    ChapterCountLimited,
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
