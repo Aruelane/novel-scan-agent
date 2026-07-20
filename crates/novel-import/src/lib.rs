@@ -14,6 +14,7 @@
 
 pub mod archive;
 mod capability;
+pub mod docx;
 mod encoding;
 pub mod epub;
 mod error;
