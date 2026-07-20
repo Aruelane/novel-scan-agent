@@ -61,7 +61,7 @@
 | S2-08 | EPUB container/OPF/spine | DONE | cedabd3; 51 tests pass; import_novel wired; capability Ready |
 | S2-09 | EPUB 正文、章节和锚点 | DONE | d9ee2df; fragment/paragraph/nav skip; 51 tests pass |
 | S2-10 | DOCX 正文、标题和段落锚点 | DONE | 0c7afcb; 55 tests pass; import_novel wired; capability Ready |
-| S2-11 | 文本 PDF 与扫描版判定 | IN_PROGRESS | started 2026-07-20; parser exists at c265066; wiring into import_novel |
+| S2-11 | 文本 PDF 与扫描版判定 | DONE | 42874be; 55 tests pass; import_novel wired; capability Ready |
 | S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 38 tests pass |
 | S2-13 | Tauri Windows 选择与导入命令 | RETRY | 5864573 import_novel_bytes fn exists; NOT in invoke_handler (only import_capabilities+rule_pack_summary) |
 | S2-14 | 前端真实导入流与能力状态 | RETRY | ffd9107; ImportPanel is aria-disabled demo; useAppState uses demoBooks |
