@@ -5,6 +5,7 @@
 //! stores. Actual API adapters and secret management are built in later S4 tasks.
 
 pub mod config;
+pub mod credential;
 pub mod http;
 pub mod prompt;
 pub mod registry;
