@@ -358,6 +358,43 @@ BEGIN
     SELECT RAISE(ABORT, 'cannot delete rule selection after checkpoint exists');
 END;
 
+-- S3 extensions: stop reason, usage budget, and usage tracking.
+-- Applied as ALTER for pre-existing scan_jobs; safe for fresh installs too.
+
+ALTER TABLE scan_jobs ADD COLUMN stop_reason TEXT
+    CHECK (stop_reason IS NULL OR stop_reason IN (
+        'completed', 'user_paused', 'user_cancelled', 'budget_reached', 'failed'
+    ));
+
+ALTER TABLE scan_jobs ADD COLUMN usage_budget_json TEXT;
+
+-- Usage tracking for provider-neutral accounting.
+-- Input/output units are provider-reported; requests are deterministic.
+CREATE TABLE usage_events (
+    id TEXT PRIMARY KEY NOT NULL
+        CHECK (length(trim(id)) > 0),
+    scan_job_id TEXT NOT NULL
+        REFERENCES scan_jobs(id) ON DELETE CASCADE,
+    chapter_id TEXT NOT NULL
+        REFERENCES chapters(id) ON DELETE CASCADE,
+    window_index INTEGER NOT NULL DEFAULT 0
+        CHECK (window_index >= 0),
+    attempt INTEGER NOT NULL DEFAULT 1
+        CHECK (attempt >= 1),
+    input_units INTEGER NOT NULL
+        CHECK (input_units >= 0),
+    output_units INTEGER NOT NULL
+        CHECK (output_units >= 0),
+    outcome TEXT NOT NULL
+        CHECK (outcome IN ('success', 'retry', 'failed')),
+    created_at_ms INTEGER NOT NULL
+        CHECK (created_at_ms >= 0),
+    FOREIGN KEY (scan_job_id, chapter_id) REFERENCES chapters(book_id, ordinal)
+);
+
+CREATE INDEX idx_usage_events_job
+    ON usage_events(scan_job_id, created_at_ms);
+
 CREATE TRIGGER trg_checkpoints_scan_job_id_immutable
 BEFORE UPDATE OF scan_job_id ON checkpoints
 BEGIN

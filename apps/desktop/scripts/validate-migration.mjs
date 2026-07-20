@@ -909,6 +909,68 @@ test('checkpoint cannot move to another scan job', () => {
 // Integrity checks
 // ═══════════════════════════════════════════════════════════
 
+// ── S3-12: usage_events table ──
+
+test('usage_events table exists', () => {
+  const row = db.prepare("SELECT name FROM sqlite_master WHERE type = 'table' AND name = 'usage_events'").get();
+  if (!row) throw new Error('usage_events table not found');
+});
+
+test('usage_events: valid insert succeeds', () => {
+  if (!tryExec(
+    `INSERT INTO usage_events (id, scan_job_id, chapter_id, window_index, attempt, input_units, output_units, outcome, created_at_ms)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    'ue-1', 'test-job', 'test-ch', 0, 1, 100, 50, 'success', 0
+  )) {
+    throw new Error('usage_events valid insert failed');
+  }
+});
+
+test('usage_events: negative input_units rejected', () => {
+  if (tryExec(
+    `INSERT INTO usage_events (id, scan_job_id, chapter_id, window_index, attempt, input_units, output_units, outcome, created_at_ms)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    'ue-neg', 'test-job', 'test-ch', 0, 1, -1, 0, 'success', 0
+  )) {
+    throw new Error('negative input_units should be rejected');
+  }
+});
+
+test('usage_events: illegal outcome rejected', () => {
+  if (tryExec(
+    `INSERT INTO usage_events (id, scan_job_id, chapter_id, window_index, attempt, input_units, output_units, outcome, created_at_ms)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    'ue-bad', 'test-job', 'test-ch', 0, 1, 0, 0, 'invalid', 0
+  )) {
+    throw new Error('illegal outcome should be rejected');
+  }
+});
+
+test('scan_jobs: stop_reason column exists and accepts valid values', () => {
+  try {
+    db.exec("UPDATE scan_jobs SET stop_reason = 'user_paused' WHERE id = 'test-job'");
+  } catch (e) {
+    throw new Error(`stop_reason update failed: ${e.message}`);
+  }
+});
+
+test('scan_jobs: usage_budget_json column exists', () => {
+  try {
+    db.exec("UPDATE scan_jobs SET usage_budget_json = '{\"max_requests\":100}' WHERE id = 'test-job'");
+  } catch (e) {
+    throw new Error(`usage_budget_json update failed: ${e.message}`);
+  }
+});
+
+test('scan_jobs: illegal stop_reason rejected', () => {
+  try {
+    db.exec("UPDATE scan_jobs SET stop_reason = 'bad_value' WHERE id = 'test-job'");
+    throw new Error('illegal stop_reason should be rejected');
+  } catch {
+    // expected
+  }
+});
+
 test('PRAGMA foreign_key_check is clean', () => {
   const rows = db.prepare('PRAGMA foreign_key_check').all();
   if (rows.length !== 0) {
