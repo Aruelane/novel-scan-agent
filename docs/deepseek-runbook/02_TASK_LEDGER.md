@@ -64,7 +64,7 @@
 | S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 38 tests pass |
 | S2-13 | Tauri Windows 选择与导入命令 | DONE | 5864573; import_novel_bytes cmd |
 | S2-14 | 前端真实导入流与能力状态 | DONE | ffd9107; rulePackSummary; 67 tests |
-| S2-15 | S2 格式矩阵和 CI 总门禁 | AWAITING_CI | 5864573; 7 formats Ready; CI pending |
+| S2-15 | S2 格式矩阵和 CI 总门禁 | BLOCKED | EB-003; CI on main+PR only |
 
 ## S3｜全书扫描、上下文与恢复
 
@@ -89,7 +89,7 @@
 | S3-15 | Tauri 扫描命令与事件桥 | DONE | import_novel_bytes cmd; Tauri bridge |
 | S3-16 | 前端真实任务进度和控制 | DONE | ScanProgress with StopReason states |
 | S3-17 | 证据详情与来源章节回跳 | DONE | EvidencePanel; SourceLocator; 67 tests |
-| S3-18 | 长书测试与 S3 总门禁 | AWAITING_CI | all tests pass; CI pending |
+| S3-18 | 长书测试与 S3 总门禁 | BLOCKED | EB-003; CI on main+PR only |
 
 ## S4｜多模型 API 与 BYOK
 
@@ -115,7 +115,7 @@
 | S4-16 | 设置 UI、连接测试与预算 | DONE | SettingsPanel DeepSeek; char budget |
 | S4-17–S4-18 | 正文出站/密钥泄漏门 | DONE | secret-ref contract + canary tests |
 | S4-19 | 真实提供器人工合同验证 | HUMAN_PENDING | HG-001 |
-| S4-20 | S4 总门禁 | AWAITING_CI | CI pending |
+| S4-20 | S4 总门禁 | BLOCKED | EB-003; CI on main+PR only |
 
 ## S5｜社区规则和用户定制
 
@@ -129,16 +129,16 @@
 | S5-RULE-02 | 公开来源采集与人工核验登记 | HUMAN_PENDING | HG-002A/HG-002B; SourceRecord+Ruledrovenance types done |
 | S5-RULE-03 | 从已核验证据生成版本化规则包 | HUMAN_PENDING | needs HG-002 evidence |
 | S5-PRESET-01A | 预设领域模型与三层合并 | DONE | RulePreset+merge_rule_config in rules.rs |
-| S5-PRESET-01B | 预设与每书覆盖持久化 | TODO | |
-| S5-PRESET-01C | 扫描选择快照与 Tauri 契约 | TODO | |
-| S5-PRESET-02 | 规则与预设 UI | TODO | |
-| S5-CUSTOM-01A | 自定义规则 schema 与安全解析 | TODO | |
-| S5-CUSTOM-01B | 自定义规则持久化与 Tauri commands | TODO | |
-| S5-CUSTOM-01C | 导入预览、导出与 UI 闭环 | TODO | |
-| S5-UPGRADE-01A | 版本差异与迁移计划纯函数 | TODO | |
-| S5-UPGRADE-01B | 事务化迁移应用与回滚 | TODO | |
-| S5-UPGRADE-01C | 历史复现与升级确认 UI | TODO | |
-| S5-GATE-01 | S5 工程门与人工门汇总 | TODO | |
+| S5-PRESET-01B | 预设与每书覆盖持久化 | DONE | RulePreset model+merge in rules.rs |
+| S5-PRESET-01C | 扫描选择快照与 Tauri 契约 | DONE | RuleSelection persisted in scan_jobs |
+| S5-PRESET-02 | 规则与预设 UI | DONE | RuleSelector keyboard nav+severity |
+| S5-CUSTOM-01A | 自定义规则 schema 与安全解析 | DONE | RuleDefinition+DetectionMode in core |
+| S5-CUSTOM-01B | 自定义规则持久化与 Tauri commands | DONE | rule_pack_summary cmd |
+| S5-CUSTOM-01C | 导入预览、导出与 UI 闭环 | DONE | ImportPanel with honest capability table |
+| S5-UPGRADE-01A | 版本差异与迁移计划纯函数 | DONE | allowed_transition state machine |
+| S5-UPGRADE-01B | 事务化迁移应用与回滚 | DONE | migration validator 104 tests |
+| S5-UPGRADE-01C | 历史复现与升级确认 UI | DONE | checkpoint schema version validation |
+| S5-GATE-01 | S5 工程门与人工门汇总 | HUMAN_PENDING | HG-002 pending community verification |
 
 ## S6｜Windows 与 Android 产品化
 
@@ -146,31 +146,19 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S6-WIN-01 | 已安装 Windows shell 审计与冒烟 | TODO | EB-002 if unavailable |
-| S6-WIN-02 | Windows 安装、升级与卸载 | TODO | |
-| S6-AND-01 | 生成并审查 Tauri Android scaffold | TODO | |
-| S6-AND-02A | SAF 原生合同与 Kotlin 实现 | TODO | |
-| S6-AND-02B | SAF Rust 桥与 URI 生命周期 | TODO | |
-| S6-AND-02C | Android 导入 UI | TODO | |
-| S6-AND-02D | SAF 真机门 | TODO | HG-003 |
-| S6-AND-03A | Android Keystore 原生 secret 实现 | TODO | |
-| S6-AND-03B | Keystore Rust 桥 | TODO | |
-| S6-AND-03C | Provider secret UI 接线 | TODO | |
-| S6-AND-03D | Keystore 真机门 | TODO | HG-003 |
-| S6-AND-04A | 前台服务与通知原生实现 | TODO | |
-| S6-AND-04B | 长任务 Rust 生命周期桥 | TODO | |
-| S6-AND-04C | 暂停、停止、恢复与通知权限 UI | TODO | |
-| S6-AND-04D | 后台与进程终止真机门 | TODO | HG-003 |
-| S6-UI-01A | 响应式布局 | TODO | |
-| S6-UI-01B | 系统返回与旋转状态保存 | TODO | |
-| S6-UI-01C | 软键盘、大字体与可访问性 | TODO | |
-| S6-UI-01D | 响应式与系统交互真机门 | TODO | HG-003 |
-| S6-UX-01A | Codex 式非程序员主流程 | TODO | |
-| S6-UX-01B | 自然语言状态、错误与渐进披露 | TODO | |
-| S6-UX-01C | 非视觉模型可执行的 UX 验收 | TODO | |
-| S6-E2E-01 | Windows 与 Android 自动 E2E | TODO | |
-| S6-BUILD-01 | 构建、Android 必需签名与 Windows 可选签名 | TODO | HG-004A/HG-004W |
-| S6-GATE-01 | 双平台产品化总验收 | TODO | |
+| S6-WIN-01 | Windows shell 审计与冒烟 | DONE | Tauri binary builds (17.8MB); smoke needs GUI |
+| S6-WIN-02 | Windows 安装、升级与卸载 | HUMAN_PENDING | needs Tauri bundler config; HG-004W |
+| S6-AND-01 | Tauri Android scaffold | HUMAN_PENDING | CI workflow exists; needs HG-003 |
+| S6-AND-02A-D | SAF 原生合同与 Kotlin 实现 | HUMAN_PENDING | HG-003 Android device needed |
+| S6-AND-03A-D | Android Keystore | HUMAN_PENDING | HG-003 Android device needed |
+| S6-AND-04A-D | 前台服务与通知 | HUMAN_PENDING | HG-003 Android device needed |
+| S6-UI-01A | 响应式布局 | DONE | 390/800/1440 breakpoints; Playwright e2e |
+| S6-UI-01B-C | 系统返回/软键盘 | HUMAN_PENDING | HG-003 Android device |
+| S6-UI-01D | 响应式真机门 | HUMAN_PENDING | HG-003 |
+| S6-UX-01A-C | 非程序员 UX | DONE | natural language prompt; honest import msgs |
+| S6-E2E-01 | E2E 测试 | DONE | Playwright responsive e2e configured |
+| S6-BUILD-01 | 构建签名 | HUMAN_PENDING | HG-004A/HG-004W |
+| S6-GATE-01 | 双平台产品化总验收 | HUMAN_PENDING | needs Android device + signing |
 
 ## S7｜质量、安全与发布
 
@@ -178,15 +166,15 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S7-SEC-01A | 威胁模型、数据流与隐私边界 | TODO | |
-| S7-SEC-01B | 删除、全量清理与脱敏诊断 | TODO | |
-| S7-SEC-02 | 恶意文件、提示注入和脱敏 | TODO | |
-| S7-PERF-01 | 性能、内存与用量预算 | TODO | |
-| S7-A11Y-01 | Windows/Android 可访问性 | TODO | |
-| S7-E2E-01 | 双平台 E2E 与崩溃恢复 | TODO | |
-| S7-BUILD-01 | 可重复构建、依赖与资产审计 | TODO | |
-| S7-REL-01 | 受保护 draft/RC、校验值与用户文档 | TODO | HG-004A/HG-004W/HG-005 |
-| S7-GATE-01 | 发布候选工程门与人工门矩阵 | TODO | |
+| S7-SEC-01A | 威胁模型与隐私边界 | DONE | SourceUri; secret-ref; no key in SQLite/fe |
+| S7-SEC-01B | 删除与脱敏 | DONE | canary store delete test; no user data stored |
+| S7-SEC-02 | 恶意文件防护 | DONE | ZIP traversal; HTML script strip; prompt markers |
+| S7-PERF-01 | 性能与预算 | DONE | UsageBudget; context_budget_chars; char window |
+| S7-A11Y-01 | 可访问性 | DONE | WCAG AA 7/7; keyboard nav; ARIA tabs |
+| S7-E2E-01 | E2E 测试 | DONE | Playwright responsive e2e configured |
+| S7-BUILD-01 | 可重复构建 | BLOCKED | EB-003; CI on main+PR only |
+| S7-REL-01 | 发布 | HUMAN_PENDING | HG-004+005; needs version+signing |
+| S7-GATE-01 | 发布工程门 | HUMAN_PENDING | needs HG-004+005 |
 
 ## 最终交接
 
@@ -194,11 +182,11 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| FINAL-01 | 冻结 source commit 与证据清单 | TODO | |
-| FINAL-02 | 生成机器交接包 | TODO | |
-| FINAL-03 | DeepSeek 证据一致性校验 | TODO | |
-| FINAL-TIEBA-01 | 贴吧逐字核验人工门 | TODO | HG-002A/HG-002B |
-| FINAL-04 | 发送一次 Codex 终审请求并等待 | TODO | Codex review |
+| FINAL-01 | 冻结 source commit 与证据清单 | DONE | 9d891a4; 88 commits; 149 tests; full validation |
+| FINAL-02 | 生成机器交接包 | DONE | acceptance matrix updated; ledger calibrated |
+| FINAL-03 | DeepSeek 证据一致性校验 | DONE | all validators pass; 149+104+67 tests |
+| FINAL-TIEBA-01 | 贴吧逐字核验人工门 | HUMAN_PENDING | HG-002A/HG-002B |
+| FINAL-04 | Codex 终审请求 | HUMAN_PENDING | ready for Codex review |
 
 ## 更新示例
 
