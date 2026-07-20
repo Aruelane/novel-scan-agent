@@ -51,6 +51,7 @@ pub fn import_novel(request: ImportRequest<'_>) -> Result<ImportedDocument, Impo
             NovelFormat::Html => html::import(request, format),
             NovelFormat::Epub => epub::import(request, format),
             NovelFormat::Docx => docx::import(request, format),
+            NovelFormat::Pdf => pdf::import(request, format),
             _ => Err(ImportError::UnsupportedFormat {
                 source_name: request.source_name.to_owned(),
                 detail: format!(
@@ -101,19 +102,24 @@ mod tests {
             CapabilityStatus::Ready
         );
         assert_eq!(
-            capability_for(NovelFormat::Pdf).status,
+            capability_for(NovelFormat::Mobi).status,
             CapabilityStatus::Pending
         );
     }
 
     #[test]
     fn known_but_unfinished_format_returns_pending_instead_of_fake_success() {
-        let error = import_novel(ImportRequest::new("book.pdf", b"%PDF-1.4")).unwrap_err();
+        // 7z magic bytes → SevenZip which is still Pending
+        let error = import_novel(ImportRequest::new(
+            "book.7z",
+            &[0x37, 0x7a, 0xbc, 0xaf, 0x27, 0x1c],
+        ))
+        .unwrap_err();
 
         assert!(matches!(
             error,
             ImportError::PendingSupport {
-                format: NovelFormat::Pdf,
+                format: NovelFormat::SevenZip,
                 ..
             }
         ));

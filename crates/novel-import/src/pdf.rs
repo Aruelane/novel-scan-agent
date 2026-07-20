@@ -2,8 +2,35 @@
 //! Encrypted/password-protected PDFs are rejected. Scanning-based PDFs
 //! with insufficient text return OcrRequired.
 
-use crate::model::{SourceAnchor, SourceLocator};
-use crate::{ImportError, ImportedChapter, NovelFormat};
+use crate::{
+    DocumentStats, ImportError, ImportRequest, ImportedChapter, ImportedDocument, NovelFormat,
+    SourceAnchor, SourceDescriptor, SourceLocator,
+};
+
+/// Public entry point matching the `plain_text::import` contract.
+pub(crate) fn import(
+    request: ImportRequest<'_>,
+    format: NovelFormat,
+) -> Result<ImportedDocument, ImportError> {
+    let chapters = import_pdf(request.bytes, request.source_name)?;
+    let total_chars: usize = chapters.iter().map(|c| c.text.chars().count()).sum();
+    Ok(ImportedDocument {
+        source: SourceDescriptor {
+            display_name: request.source_name.to_owned(),
+            format,
+            media_type: Some("application/pdf".to_owned()),
+            text_encoding: None,
+        },
+        stats: DocumentStats {
+            chapter_count: chapters.len(),
+            line_count: chapters.iter().map(|c| c.text.lines().count()).sum(),
+            character_count: total_chars,
+            decoded_utf8_bytes: total_chars,
+        },
+        chapters,
+        warnings: Vec::new(),
+    })
+}
 
 pub(crate) fn import_pdf(
     bytes: &[u8],

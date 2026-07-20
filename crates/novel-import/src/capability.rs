@@ -96,9 +96,9 @@ const CAPABILITIES: &[FormatCapability] = &[
         label: "PDF",
         extensions: &["pdf"],
         media_types: &["application/pdf"],
-        status: CapabilityStatus::Pending,
-        detail: "已识别格式；文本层解析优先，扫描版 OCR 将作为独立能力标注，避免伪装成可读取",
-        source_locator: "页码 + 文本块/坐标范围",
+        status: CapabilityStatus::Ready,
+        detail: "支持文本型 PDF 逐页提取；扫描版/无文本层返回 OCR 提示",
+        source_locator: "页码 + 文本范围",
     },
     FormatCapability {
         format: NovelFormat::Html,
