@@ -60,11 +60,11 @@
 | S2-07 | HTML 安全文本导入 | DONE | 33237f7; 36 tests pass |
 | S2-08+S2-09 | EPUB 导入 | DONE | 81aea8e; 36 tests pass |
 | S2-10 | DOCX 导入 | DONE | 8394b97; 36 tests pass |
-| S2-11 | 文本 PDF 与扫描版判定 | TODO | needs pdf crate |
-| S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 36 tests pass |
-| S2-13 | Tauri Windows 选择与导入命令 | TODO | needs import cmd wiring |
+| S2-11 | 文本 PDF 与扫描版判定 | DONE | c265066; lopdf; 38 tests |
+| S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 38 tests pass |
+| S2-13 | Tauri Windows 选择与导入命令 | DONE | 5864573; import_novel_bytes cmd |
 | S2-14 | 前端真实导入流与能力状态 | DONE | ffd9107; rulePackSummary; 67 tests |
-| S2-15 | S2 格式矩阵和 CI 总门禁 | TODO | gate docs |
+| S2-15 | S2 格式矩阵和 CI 总门禁 | AWAITING_CI | 5864573; 7 formats Ready; CI pending |
 
 ## S3｜全书扫描、上下文与恢复
 
