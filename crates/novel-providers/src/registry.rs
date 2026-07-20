@@ -36,17 +36,11 @@ pub fn builtin_templates() -> Vec<ProviderTemplate> {
 }
 
 /// Production-facing templates (excludes test-only providers).
-pub fn production_templates() -> Vec<&'static ProviderTemplate> {
+pub fn production_templates() -> Vec<ProviderTemplate> {
     builtin_templates()
-        .iter()
+        .into_iter()
         .filter(|t| t.protocol != ProviderProtocol::DeterministicTest)
-        .collect::<Vec<_>>()
-        .into_iter()
-        .cloned()
-        .collect::<Vec<_>>()
-        .into_iter()
-        .filter(|_| true)
-        .collect::<Vec<_>>()
+        .collect()
 }
 
 /// Returns the production-ready templates as owned values.
