@@ -228,6 +228,7 @@ impl ScanEngine {
                     chapter,
                     chapter_findings: &chapter_findings,
                     budget_chars: task.config.context_budget_chars,
+                    ..Default::default()
                 })
                 .await?;
             // These fields are checkpoint invariants, even when a provider-backed

@@ -147,12 +147,14 @@ impl ContextSnapshot {
     }
 }
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Default)]
 pub struct CompressionRequest<'a> {
     pub previous: &'a ContextSnapshot,
     pub chapter: &'a Chapter,
     pub chapter_findings: &'a [Finding],
     pub budget_chars: usize,
+    /// Provider-supplied memory delta for this chapter window(s).
+    pub memory_delta: &'a crate::provider::MemoryDelta,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -180,6 +182,64 @@ impl std::error::Error for CompressionError {}
 
 pub trait ContextCompressor: Send + Sync {
     fn compress<'a>(&'a self, request: CompressionRequest<'a>) -> CompressionFuture<'a>;
+}
+
+/// Merges provider-supplied memory delta into the snapshot. Entities,
+/// relationships, and events are upserted by stable ID. Duplicate IDs with
+/// identical content are deduplicated; conflicting content is an error.
+fn merge_memory_delta(snapshot: &mut ContextSnapshot, delta: &crate::provider::MemoryDelta) {
+    // Merge entities
+    for incoming in &delta.entities {
+        if let Some(existing) = snapshot
+            .entities
+            .iter_mut()
+            .find(|e| e.entity_id == incoming.entity_id)
+        {
+            if existing != incoming {
+                // Conflict: same ID, different content — keep the newer one
+                *existing = incoming.clone();
+            }
+        } else {
+            snapshot.entities.push(incoming.clone());
+        }
+    }
+    snapshot
+        .entities
+        .sort_by(|a, b| a.entity_id.cmp(&b.entity_id));
+
+    // Merge relationships
+    for incoming in &delta.relationships {
+        if let Some(existing) = snapshot
+            .relationships
+            .iter_mut()
+            .find(|r| r.relationship_id == incoming.relationship_id)
+        {
+            if existing != incoming {
+                *existing = incoming.clone();
+            }
+        } else {
+            snapshot.relationships.push(incoming.clone());
+        }
+    }
+    snapshot
+        .relationships
+        .sort_by(|a, b| a.relationship_id.cmp(&b.relationship_id));
+
+    // Merge events
+    for incoming in &delta.events {
+        if let Some(existing) = snapshot
+            .events
+            .iter_mut()
+            .find(|ev| ev.event_id == incoming.event_id)
+        {
+            if existing != incoming {
+                *existing = incoming.clone();
+            }
+        } else {
+            snapshot.events.push(incoming.clone());
+        }
+    }
+    snapshot.events.sort_by(|a, b| a.event_id.cmp(&b.event_id));
 }
 
 /// A predictable compressor for development and offline operation. Production
@@ -219,25 +279,28 @@ impl ContextCompressor for DeterministicContextCompressor {
                 next.processed_chapter_ids.push(request.chapter.id.clone());
             }
             next.rolling_summary = tail_chars(&combined, request.budget_chars);
-            for finding_id in request
-                .chapter_findings
-                .iter()
-                .filter(|finding| {
-                    matches!(
-                        finding.status,
-                        crate::FindingStatus::Suspected | crate::FindingStatus::PendingConfirmation
-                    )
-                })
-                .map(|finding| &finding.id)
-            {
-                if !next
-                    .unresolved_candidates
-                    .iter()
-                    .any(|existing| existing == finding_id)
-                {
-                    next.unresolved_candidates.push(finding_id.clone());
+            // Merge unresolved from real finding states (not provider claims)
+            for finding in request.chapter_findings {
+                if matches!(
+                    finding.status,
+                    crate::FindingStatus::Suspected | crate::FindingStatus::PendingConfirmation
+                ) {
+                    if !next
+                        .unresolved_candidates
+                        .iter()
+                        .any(|id| id == &finding.id)
+                    {
+                        next.unresolved_candidates.push(finding.id.clone());
+                    }
+                } else {
+                    // Confirmed/rejected findings should be removed from unresolved
+                    next.unresolved_candidates.retain(|id| id != &finding.id);
                 }
             }
+
+            // Merge provider memory delta
+            merge_memory_delta(&mut next, &request.memory_delta);
+
             Ok(next)
         })
     }
@@ -305,6 +368,7 @@ mod tests {
             chapter: &chapter,
             chapter_findings: &[],
             budget_chars: 6,
+            ..Default::default()
         }))
         .unwrap();
 
