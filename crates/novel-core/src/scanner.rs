@@ -1097,7 +1097,7 @@ mod tests {
                             utf8_byte_end: 10_000,
                         }],
                     }],
-                    usage: Default::default(),
+                    ..Default::default()
                 })
             })
         }
@@ -1152,7 +1152,7 @@ mod tests {
                             utf8_byte_end: start + "身份".len(),
                         }],
                     }],
-                    usage: Default::default(),
+                    ..Default::default()
                 })
             })
         }
@@ -1326,7 +1326,7 @@ mod tests {
             Box::pin(async {
                 Ok(ProviderResponse {
                     candidates: vec![],
-                    usage: Default::default(),
+                    ..Default::default()
                 })
             })
         }
@@ -1465,7 +1465,7 @@ mod tests {
             Box::pin(async {
                 Ok(ProviderResponse {
                     candidates: self.candidates.clone(),
-                    usage: Default::default(),
+                    ..Default::default()
                 })
             })
         }

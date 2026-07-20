@@ -3,8 +3,8 @@ use std::{fmt, future::Future, pin::Pin};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AlertLevel, Chapter, ConfirmationScope, ContextSnapshot, DetectionMode, RuleCategory,
-    RuleDefinition,
+    AlertLevel, Chapter, ConfirmationScope, ContextSnapshot, DetectionMode, EntityMemory,
+    EventMemory, RelationshipMemory, RuleCategory, RuleDefinition,
 };
 
 pub type ProviderFuture<'a> =
@@ -84,10 +84,160 @@ pub struct ProviderUsage {
     pub output_units: u64,
 }
 
+/// Provider-supplied memory updates. These are inference memories, not evidence.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct MemoryDelta {
+    #[serde(default)]
+    pub entities: Vec<EntityMemory>,
+    #[serde(default)]
+    pub relationships: Vec<RelationshipMemory>,
+    #[serde(default)]
+    pub events: Vec<EventMemory>,
+}
+
+/// How the provider wants the core to dispose of an existing candidate.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CandidateDisposition {
+    KeepPending,
+    Confirm,
+    Reject,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+pub struct ProviderCandidateUpdate {
+    pub finding_id: String,
+    pub disposition: CandidateDisposition,
+    #[serde(default)]
+    pub evidence_ranges: Vec<ProviderEvidenceRange>,
+    #[serde(default)]
+    pub rationale: Option<String>,
+}
+
+/// Domain-level limits on provider output shape.
+pub const PROVIDER_MAX_CANDIDATES: usize = 256;
+pub const PROVIDER_MAX_UPDATES: usize = 256;
+pub const PROVIDER_MAX_EVIDENCE_RANGES_PER_CANDIDATE: usize = 16;
+pub const PROVIDER_MAX_RATIONALE_CHARS: usize = 2_000;
+pub const PROVIDER_MAX_MEMORY_ITEMS: usize = 64;
+pub const PROVIDER_MAX_MEMORY_FIELD_CHARS: usize = 500;
+
+/// Validates that a provider response does not exceed defined limits or contain
+/// structurally invalid data. Returns `Ok(())` or an actionable error message.
+pub fn validate_provider_response_shape(response: &ProviderResponse) -> Result<(), ProviderError> {
+    if response.candidates.len() > PROVIDER_MAX_CANDIDATES {
+        return Err(ProviderError::new(
+            "SHAPE_LIMIT",
+            format!(
+                "candidates count {} exceeds limit {}",
+                response.candidates.len(),
+                PROVIDER_MAX_CANDIDATES
+            ),
+            false,
+        ));
+    }
+    for candidate in &response.candidates {
+        if candidate.confidence_bps > 10_000 {
+            return Err(ProviderError::new(
+                "SHAPE_INVALID",
+                format!(
+                    "candidate for rule '{}' has confidence {} > 10000",
+                    candidate.rule_id, candidate.confidence_bps
+                ),
+                false,
+            ));
+        }
+        if candidate.rule_id.is_empty() {
+            return Err(ProviderError::new(
+                "SHAPE_INVALID",
+                "candidate has empty rule_id".into(),
+                false,
+            ));
+        }
+        if candidate.rationale.len() > PROVIDER_MAX_RATIONALE_CHARS {
+            return Err(ProviderError::new(
+                "SHAPE_LIMIT",
+                format!(
+                    "rationale length {} exceeds limit {}",
+                    candidate.rationale.len(),
+                    PROVIDER_MAX_RATIONALE_CHARS
+                ),
+                false,
+            ));
+        }
+        if candidate.evidence_ranges.len() > PROVIDER_MAX_EVIDENCE_RANGES_PER_CANDIDATE {
+            return Err(ProviderError::new(
+                "SHAPE_LIMIT",
+                format!(
+                    "evidence ranges count {} exceeds limit {}",
+                    candidate.evidence_ranges.len(),
+                    PROVIDER_MAX_EVIDENCE_RANGES_PER_CANDIDATE
+                ),
+                false,
+            ));
+        }
+        for range in &candidate.evidence_ranges {
+            if range.utf8_byte_start >= range.utf8_byte_end {
+                return Err(ProviderError::new(
+                    "SHAPE_INVALID",
+                    "evidence range start must be less than end".into(),
+                    false,
+                ));
+            }
+        }
+    }
+    if response.candidate_updates.len() > PROVIDER_MAX_UPDATES {
+        return Err(ProviderError::new(
+            "SHAPE_LIMIT",
+            format!(
+                "candidate_updates count {} exceeds limit {}",
+                response.candidate_updates.len(),
+                PROVIDER_MAX_UPDATES
+            ),
+            false,
+        ));
+    }
+    // Check for duplicate update finding IDs
+    {
+        let mut seen = std::collections::HashSet::new();
+        for update in &response.candidate_updates {
+            if !seen.insert(update.finding_id.as_str()) {
+                return Err(ProviderError::new(
+                    "SHAPE_INVALID",
+                    format!(
+                        "duplicate candidate_update finding_id '{}'",
+                        update.finding_id
+                    ),
+                    false,
+                ));
+            }
+        }
+    }
+    // Memory delta size checks
+    if response.memory_delta.entities.len() > PROVIDER_MAX_MEMORY_ITEMS
+        || response.memory_delta.relationships.len() > PROVIDER_MAX_MEMORY_ITEMS
+        || response.memory_delta.events.len() > PROVIDER_MAX_MEMORY_ITEMS
+    {
+        return Err(ProviderError::new(
+            "SHAPE_LIMIT",
+            format!(
+                "memory delta items exceed limit {}",
+                PROVIDER_MAX_MEMORY_ITEMS
+            ),
+            false,
+        ));
+    }
+    Ok(())
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ProviderResponse {
     pub candidates: Vec<ProviderCandidate>,
     pub usage: ProviderUsage,
+    #[serde(default)]
+    pub memory_delta: MemoryDelta,
+    #[serde(default)]
+    pub candidate_updates: Vec<ProviderCandidateUpdate>,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -197,6 +347,7 @@ impl ModelProvider for DeterministicTestProvider {
                     output_units: candidates.len() as u64,
                 },
                 candidates,
+                ..Default::default()
             })
         })
     }
