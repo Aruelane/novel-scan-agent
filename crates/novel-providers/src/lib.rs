@@ -13,3 +13,4 @@ pub mod registry;
 pub mod retry;
 pub mod schema;
 pub mod secret;
+pub mod security;
