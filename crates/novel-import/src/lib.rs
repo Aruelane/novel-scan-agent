@@ -16,6 +16,7 @@ pub mod archive;
 mod capability;
 mod encoding;
 mod error;
+pub mod html;
 pub mod markdown;
 mod model;
 mod plain_text;
