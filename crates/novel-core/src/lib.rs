@@ -11,6 +11,7 @@ pub mod context_view;
 pub mod model;
 pub mod persistence;
 pub mod provider;
+pub mod rules;
 pub mod scanner;
 pub mod source;
 
