@@ -87,8 +87,8 @@ const CAPABILITIES: &[FormatCapability] = &[
         label: "Word DOCX",
         extensions: &["docx"],
         media_types: &["application/vnd.openxmlformats-officedocument.wordprocessingml.document"],
-        status: CapabilityStatus::Pending,
-        detail: "已识别格式，标题样式、段落与页眉脚注解析将在后续阶段接入",
+        status: CapabilityStatus::Ready,
+        detail: "支持 DOCX 正文、Heading 样式分章与段落锚点",
         source_locator: "标题层级 + 段落序号",
     },
     FormatCapability {
