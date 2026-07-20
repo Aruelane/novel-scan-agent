@@ -12,6 +12,7 @@ pub mod model;
 pub mod persistence;
 pub mod provider;
 pub mod scanner;
+pub mod source;
 
 pub use compression::{
     memory_id, CompressionError, CompressionFuture, CompressionRequest, ContextCompressor,
