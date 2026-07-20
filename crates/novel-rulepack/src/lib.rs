@@ -60,7 +60,7 @@ pub struct DetectionJson {
     pub requires_user_boundary: bool,
 }
 
-#[derive(Debug, Deserialize, Clone, PartialEq, Eq)]
+#[derive(Debug, Default, Deserialize, Clone, PartialEq, Eq)]
 #[serde(rename_all = "camelCase")]
 pub struct ProvenanceJson {
     #[allow(dead_code)]
@@ -345,7 +345,7 @@ mod tests {
                 mode: Some("semantic".into()),
                 criteria: vec!["Must have evidence".into()],
                 exclusions: vec!["Rumors".into()],
-                pending_conditions: vec![],
+                pending_conditions: vec!["Needs confirmation".into()],
                 confirmation_scope: "chapter".into(),
                 requires_user_boundary: false,
             },
@@ -525,7 +525,7 @@ mod tests {
         let loaded = RulePack::convert_to_loaded_rule(rule).unwrap();
         assert_eq!(loaded.criteria, vec!["Must have evidence"]);
         assert_eq!(loaded.exclusions, vec!["Rumors"]);
-        assert!(loaded.pending_conditions.is_empty());
+        assert!(!loaded.pending_conditions.is_empty());
         assert_eq!(loaded.detection_mode, "semantic");
     }
 

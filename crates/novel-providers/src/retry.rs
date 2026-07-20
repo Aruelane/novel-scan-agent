@@ -39,7 +39,8 @@ pub fn is_non_retryable_http_status(status: u16) -> bool {
 /// use random jitter; the deterministic variant is sufficient for S4 testing.
 pub fn backoff_delay(config: &RetryConfig, attempt: u32) -> Duration {
     let base = config.base_delay.as_millis() as u64;
-    let exp = base.saturating_mul(1u64.saturating_shl(attempt.saturating_sub(1)));
+    let shift = (attempt.saturating_sub(1)).min(63);
+    let exp = base.saturating_mul(1u64 << shift);
     let capped = exp.min(config.max_delay.as_millis() as u64);
     // Deterministic jitter: ±25% based on attempt parity
     let jitter = capped / 8;

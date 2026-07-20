@@ -12,7 +12,7 @@ pub const MAX_RESPONSE_BYTES: usize = 2 * 1024 * 1024; // 2 MB
 /// Wire-format candidate from any supported protocol. This is what the
 /// protocol adapters deserialize and then validate before converting to
 /// `ProviderCandidate`.
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct WireCandidate {
     pub rule_id: String,

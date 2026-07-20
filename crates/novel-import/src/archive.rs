@@ -17,11 +17,10 @@ pub fn enumerate_zip(
     max_total: usize,
 ) -> Result<Vec<ArchiveEntry>, ImportError> {
     let cursor = Cursor::new(bytes);
-    let mut archive =
-        zip::ZipArchive::new(cursor).map_err(|e| ImportError::Corrupt {
-            source_name: source_name.to_owned(),
-            detail: format!("无法打开 ZIP 容器：{e}"),
-        })?;
+    let mut archive = zip::ZipArchive::new(cursor).map_err(|e| ImportError::Corrupt {
+        source_name: source_name.to_owned(),
+        detail: format!("无法打开 ZIP 容器：{e}"),
+    })?;
 
     let entry_count = archive.len();
     if entry_count == 0 {
@@ -58,7 +57,8 @@ pub fn enumerate_zip(
         }
 
         // Reject encrypted entries
-        if entry.version_needed() & 1 != 0 {
+        // Check for encryption: bit 0 of the general purpose bit flag
+        if entry.encrypted() {
             return Err(ImportError::Protected {
                 source_name: source_name.to_owned(),
                 detail: format!("ZIP 条目 '{name}' 已加密"),

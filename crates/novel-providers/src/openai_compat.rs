@@ -102,7 +102,7 @@ fn resolve_key(
     let handle = credential_ref.ok_or_else(|| {
         ProviderError::new(
             "NO_CREDENTIAL",
-            "no secret-ref configured for this provider".into(),
+            String::from("no secret-ref configured for this provider"),
             false,
         )
     })?;
@@ -113,12 +113,12 @@ fn resolve_key(
         crate::secret::ResolvedSecret::Key(k) => Ok(k),
         crate::secret::ResolvedSecret::Missing => Err(ProviderError::new(
             "NO_CREDENTIAL",
-            "credential not configured".into(),
+            String::from("credential not configured"),
             false,
         )),
         crate::secret::ResolvedSecret::Unavailable => Err(ProviderError::new(
             "SECRET_STORE",
-            "platform secret store unavailable".into(),
+            String::from("platform secret store unavailable"),
             false,
         )),
     }

@@ -124,6 +124,8 @@ mod tests {
         let json = serde_json::to_string(&profile).unwrap();
         assert!(!json.contains("api_key"));
         assert!(!json.contains("token"));
-        assert!(!json.contains("secret-ref:"));
+        // credential_ref contains the secret-ref: prefix — that's the opaque handle, not the secret
+        assert!(!json.contains("sk-"));
+        assert!(!json.contains("Bearer"));
     }
 }

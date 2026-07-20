@@ -2,8 +2,7 @@
 //! and setext headings. Headings inside fenced code blocks are ignored.
 
 use crate::model::{ImportWarning, ImportWarningCode, SourceAnchor, SourceLocator};
-use crate::plain_text::SourceSlice;
-use crate::{ImportError, ImportedChapter, NovelFormat, TextEncoding};
+use crate::{ImportError, ImportedChapter, NovelFormat};
 
 pub(crate) fn import_markdown(
     decoded: &str,
