@@ -98,7 +98,7 @@
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S4-01 | Provider 配置与注册表 | IN_PROGRESS | started 2026-07-20; adding OpenAI-compatible + Anthropic templates |
+| S4-01 | Provider 配置与注册表 | DONE | 024d185; 3 production templates (OpenAI/DeepSeek/Anthropic); 27 tests pass |
 | S4-02 | 共享结构化输出 wire schema | DONE | 7223707; 25 tests |
 | S4-03 | 统一且防提示注入的扫描 prompt | DONE | 80c5193; 25 tests |
 | S4-04 | HTTP 执行、脱敏、超时与取消 | RETRY | cc5849c stub; real HTTP not implemented |
