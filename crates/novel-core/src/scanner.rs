@@ -39,6 +39,9 @@ pub struct ScanCheckpoint {
     pub context: ContextSnapshot,
     #[serde(default)]
     pub usage_totals: UsageTotals,
+    /// Why the scan was last stopped. `None` for legacy checkpoints.
+    #[serde(default)]
+    pub stop_reason: Option<StopReason>,
 }
 
 impl ScanCheckpoint {
@@ -122,6 +125,7 @@ pub struct ScanBatchResult {
     pub chapters_scanned: usize,
     pub new_findings: usize,
     pub complete: bool,
+    pub stop_reason: StopReason,
 }
 
 #[derive(Debug)]
@@ -274,11 +278,18 @@ impl ScanEngine {
             store.save(&checkpoint)?;
         }
 
+        let stop_reason = if complete {
+            StopReason::Completed
+        } else {
+            StopReason::UserPaused
+        };
+        checkpoint.stop_reason = Some(stop_reason);
         Ok(ScanBatchResult {
             new_findings: checkpoint.findings.len() - starting_findings,
             checkpoint,
             chapters_scanned,
             complete,
+            stop_reason,
         })
     }
 

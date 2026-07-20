@@ -119,6 +119,22 @@ pub enum TaskStatus {
     Failed,
 }
 
+/// Why a scan stopped before completion.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum StopReason {
+    /// Natural end: all chapters scanned.
+    Completed,
+    /// User requested pause at next safe point.
+    UserPaused,
+    /// Budget exhausted.
+    BudgetReached,
+    /// User cancelled; current in-flight work may be discarded.
+    UserCancelled,
+    /// Error occurred.
+    Failed,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
 pub struct ScanConfig {
     /// Character budget for the rolling context snapshot, not a model token
