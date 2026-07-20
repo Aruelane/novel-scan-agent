@@ -4,6 +4,7 @@
 //! known providers. It does NOT make HTTP requests or access platform secret
 //! stores. Actual API adapters and secret management are built in later S4 tasks.
 
+pub mod anthropic;
 pub mod config;
 pub mod http;
 pub mod openai_compat;
