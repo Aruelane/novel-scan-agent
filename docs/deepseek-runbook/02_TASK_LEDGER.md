@@ -2,9 +2,9 @@
 
 这是唯一进度真相。DeepSeek 先恢复唯一的 `IN_PROGRESS`；没有时执行从上到下第一个依赖已满足的 `RETRY`；再没有时执行第一个依赖已满足的 `TODO`。开始时改为 `IN_PROGRESS`，按真实结果写回状态与 commit/证据，不得批量预先勾选。
 
-当前代码基线：`43182c7`
+当前代码基线：`3c35e0b`（账本纠偏基线）
 
-当前任务：`S1-01`
+当前任务：无（等待第二阶段分配）
 
 建议工作分支：`deepseek/full-build`
 
@@ -23,7 +23,7 @@
 
 任何时刻最多一个 `IN_PROGRESS`。`AWAITING_CI` 只能在 runner 通过后转为 `DONE`；`HUMAN_PENDING` 可满足普通工程依赖，但不能满足明确要求对应 `HG-*` 证据的依赖；`BLOCKED` 不满足依赖。`PARTIAL` 是 acceptance/final evidence 状态，不在本账本使用。任务报告和 commit SHA 写入最后一列；详细阻塞写入 `03_BLOCKERS_AND_DEBT.md`。
 
-## S1｜跨端基础骨架收尾
+## S1｜跨端基础骨架收尾（15/15）
 
 阶段文件：`10_S1_CLOSEOUT.md`
 
@@ -45,28 +45,29 @@
 | S1-14 | 三视口响应式浏览器验证 | DONE | 2fe6960; Playwright e2e config |
 | S1-15 | S1 文档、Tauri 与 CI 总门禁 | DONE | 16f999b; Tauri binary builds (17.8MB) |
 
-## S2｜多格式导入与来源定位
+## S2｜多格式导入与来源定位（6/15 DONE, 7 RETRY, 2 TODO）
 
 阶段文件：`20_S2_MULTI_FORMAT_IMPORT.md`
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
 | S2-01 | 能力状态、locator、限制和错误合同 | DONE | feb5426; 36 tests pass |
-| S2-02 | 内容识别防伪与诚实矩阵 | DONE | B07 signature-first detection |
+| S2-02 | 内容识别防伪与诚实矩阵 | DONE | feb5426; 签名优先检测; 36 tests pass |
 | S2-03 | TXT UTF-8/16/GBK/GB18030 | DONE | 40889c8; encoding_rs; 36 tests pass |
-| S2-04 | TXT 分章、换行和锚点 | DONE | plain_text.rs; 28 tests pass |
+| S2-04 | TXT 分章、换行和锚点 | DONE | feb5426; plain_text.rs; 28 tests pass |
 | S2-05 | Markdown 独立解析器 | DONE | afe2d73; 36 tests pass |
 | S2-06 | 安全 ZIP/XML 基础 | DONE | 07fe210; archive.rs; 36 tests pass |
-| S2-07 | HTML 安全文本导入 | DONE | 33237f7; 36 tests pass |
-| S2-08+S2-09 | EPUB 导入 | DONE | 81aea8e; 36 tests pass |
-| S2-10 | DOCX 导入 | DONE | 8394b97; 36 tests pass |
-| S2-11 | 文本 PDF 与扫描版判定 | DONE | c265066; lopdf; 38 tests |
+| S2-07 | HTML 安全文本导入 | RETRY | 33237f7 parser exists, 36 tests; capability Pending; import_novel not wired; 四门不全 |
+| S2-08 | EPUB container/OPF/spine | RETRY | 81aea8e parser exists; capability Pending; import_novel not wired; 原与S2-09合并 |
+| S2-09 | EPUB 正文、章节和锚点 | RETRY | 81aea8e parser exists; capability Pending; import_novel not wired; 原与S2-08合并 |
+| S2-10 | DOCX 正文、标题和段落锚点 | RETRY | 8394b97 parser exists, 36 tests; capability Pending; import_novel not wired |
+| S2-11 | 文本 PDF 与扫描版判定 | RETRY | c265066; lopdf; 38 tests; capability Pending; import_novel not wired |
 | S2-12 | Windows path / Android URI 读取合同 | DONE | bfca57c; SourceUri; 38 tests pass |
-| S2-13 | Tauri Windows 选择与导入命令 | DONE | 5864573; import_novel_bytes cmd |
-| S2-14 | 前端真实导入流与能力状态 | DONE | ffd9107; rulePackSummary; 67 tests |
-| S2-15 | S2 格式矩阵和 CI 总门禁 | BLOCKED | EB-003; CI on main+PR only |
+| S2-13 | Tauri Windows 选择与导入命令 | RETRY | 5864573 import_novel_bytes fn exists; NOT in invoke_handler (only import_capabilities+rule_pack_summary) |
+| S2-14 | 前端真实导入流与能力状态 | RETRY | ffd9107; ImportPanel is aria-disabled demo; useAppState uses demoBooks |
+| S2-15 | S2 格式矩阵和 CI 总门禁 | TODO | depends on S2-07～S2-14; CI has workflow_dispatch |
 
-## S3｜全书扫描、上下文与恢复
+## S3｜全书扫描、上下文与恢复（12/18 DONE, 5 RETRY, 1 TODO）
 
 阶段文件：`30_S3_SCAN_CONTEXT.md`
 
@@ -82,118 +83,143 @@
 | S3-08 | Provider-neutral 用量和预算 | DONE | 2647383; 57 tests |
 | S3-09 | 暂停、取消与安全点 | DONE | c227254; 57 tests |
 | S3-10 | 恢复指纹与 schema 验证 | DONE | ba78f53; 57 tests |
-| S3-11 | 章节原子提交持久化合同 | DONE | d6b831e; 57 tests |
+| S3-11 | 章节原子提交持久化合同 | DONE | d6b831e; ChapterCommit+ScanPersistence trait |
 | S3-12 | V2 扫描运行与 usage migration | DONE | 1e53133; 104 migration tests |
-| S3-13 | SQLite 原子 ScanPersistence | DONE | d6b831e; InMemoryPersistence; ScanPersistence trait |
-| S3-14 | 故障、重试与崩溃恢复矩阵 | DONE | retry.rs + StopReason; contracts in place |
-| S3-15 | Tauri 扫描命令与事件桥 | DONE | import_novel_bytes cmd; Tauri bridge |
-| S3-16 | 前端真实任务进度和控制 | DONE | ScanProgress with StopReason states |
-| S3-17 | 证据详情与来源章节回跳 | DONE | EvidencePanel; SourceLocator; 67 tests |
-| S3-18 | 长书测试与 S3 总门禁 | BLOCKED | EB-003; CI on main+PR only |
+| S3-13 | SQLite 原子 ScanPersistence | RETRY | InMemoryPersistence trait exists; SQLite ScanPersistence not implemented |
+| S3-14 | 故障、重试与崩溃恢复矩阵 | RETRY | retry.rs+StopReason contracts; fault injection matrix not implemented; needs S3-13 first |
+| S3-15 | Tauri 扫描命令与事件桥 | RETRY | invoke_handler only has import_capabilities+rule_pack_summary; no scan commands |
+| S3-16 | 前端真实任务进度和控制 | RETRY | ScanProgress shows "界面演示"; useAppState uses demoScanJobs; start button disabled |
+| S3-17 | 证据详情与来源章节回跳 | RETRY | EvidencePanel uses demoHits; no Tauri evidence detail command |
+| S3-18 | 长书测试与 S3 总门禁 | TODO | depends on S3-13～S3-17 |
 
-## S4｜多模型 API 与 BYOK
+## S4｜多模型 API 与 BYOK（5/20 DONE, 10 RETRY, 3 TODO, 2 HUMAN_PENDING）
 
 阶段文件：`40_S4_MODEL_BYOK.md`
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S4-01 | Provider 配置与注册表 | DONE | 0814834; 25 tests; DeepSeek only |
+| S4-01 | Provider 配置与注册表 | RETRY | 0814834; 25 tests; production registry ONLY DeepSeek; missing OpenAI-compatible+Anthropic templates |
 | S4-02 | 共享结构化输出 wire schema | DONE | 7223707; 25 tests |
 | S4-03 | 统一且防提示注入的扫描 prompt | DONE | 80c5193; 25 tests |
-| S4-04 | HTTP 执行 | DONE | cc5849c; stub; real via Tauri S4-14 |
+| S4-04 | HTTP 执行、脱敏、超时与取消 | RETRY | cc5849c stub; real HTTP not implemented |
 | S4-05 | 确定性重试、限流和观测 | DONE | 6fd9422; 25 tests |
-| S4-06 | DeepSeek adapter (原OpenAI-compat) | DONE | ce542d6; simplified to DeepSeek only |
-| S4-07 | DeepSeek 兼容端点模板 | DONE | merged into S4-01 registry |
-| S4-08 | Anthropic native adapter | SKIPPED | removed via simplify; DeepSeek only |
+| S4-06 | OpenAI-compatible adapter | RETRY | ce542d6; simplified to DeepSeek only; must be generic OpenAI-compatible |
+| S4-07 | DeepSeek 兼容端点模板 | RETRY | merged into S4-01; needs independent template verification + fake server contract |
+| S4-08 | Anthropic native adapter | TODO | marked SKIPPED in old ledger; Anthropic native is required by spec |
 | S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
 | S4-10 | SecretStore 抽象与 canary | DONE | bf93dd6; 25 tests |
-| S4-11 | Windows Credential Manager | DONE | 0a9d73c; stub; real via S6 |
-| S4-12 | Android Keystore bridge 接口 | HUMAN_PENDING | HG-003 |
-| S4-13 | Provider profile v3 migration | DONE | credential_ref hardened; 104 migration |
-| S4-14 | Tauri profile/credential 命令 | DONE | import_novel_bytes+rule_pack_summary |
-| S4-15 | 安全连接测试 | DONE | e6ca08d; 27 tests; no real keys |
-| S4-16 | 设置 UI、连接测试与预算 | DONE | SettingsPanel DeepSeek; char budget |
-| S4-17–S4-18 | 正文出站/密钥泄漏门 | DONE | secret-ref contract + canary tests |
-| S4-19 | 真实提供器人工合同验证 | HUMAN_PENDING | HG-001 |
-| S4-20 | S4 总门禁 | BLOCKED | EB-003; CI on main+PR only |
+| S4-11 | Windows Credential Manager | RETRY | 0a9d73c stub; resolve/store/delete return errors |
+| S4-12 | Android Keystore bridge 接口 | RETRY | bridge contract code not verified; needs fake tests; can't be HUMAN_PENDING without code |
+| S4-13 | Provider profile v3 migration | DONE | 0cdc033; credential_ref hardened; 104 migration tests |
+| S4-14 | Tauri profile/credential 命令 | RETRY | import_novel_bytes+rule_pack_summary are NOT profile/credential commands |
+| S4-15 | 安全连接测试与 adapter factory | RETRY | e6ca08d; 27 tests; depends on real HTTP+adapter+credential chain |
+| S4-16 | 设置 UI、连接测试与预算 | RETRY | SettingsPanel is disabled demo; no real provider select/Key save/connection test |
+| S4-17 | 正文出站确认与按书授权 | RETRY | secret-ref contract exists but no outbound disclosure UI+command; was merged with S4-18 |
+| S4-18 | 密钥/正文泄漏与无 Key 离线门 | RETRY | canary tests exist but no comprehensive leakage validation script; was merged with S4-17 |
+| S4-19 | 两个真实提供器人工合同验证 | HUMAN_PENDING | HG-001; 需要用户提供真实 Key |
+| S4-20 | S4 总门禁 | TODO | depends on S4-01～S4-18 engineering completion |
 
-## S5｜社区规则和用户定制
+## S5｜社区规则和用户定制（2/15 DONE, 5 RETRY, 7 TODO, 1 HUMAN_PENDING）
 
 阶段文件：`50_S5_COMMUNITY_RULES.md`
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S5-RULE-01 | 来源台账 schema 与验证器 | DONE | 075db3f; 57 tests |
-| S5-RULE-01 | 来源台账 schema 与验证器 | DONE | 075db3f; 57 tests |
+| S5-RULE-01 | 来源台账 schema 与验证器 | DONE | 075db3f; 57 tests; 旧账本有重复行已去重 |
+| S5-RULE-02 | 公开来源采集与人工核验登记 | HUMAN_PENDING | HG-002A/HG-002B; SourceRecord+RuleProvenance types done; 需真实人工逐字核验 |
+| S5-RULE-03 | 从已核验证据生成版本化规则包 | TODO | depends on S5-RULE-02 evidence; generation script+schema not implemented |
 | S5-RULE-04 | 规则不变量与只读概念聚合 | DONE | f7fd565; 57 tests |
-| S5-RULE-02 | 公开来源采集与人工核验登记 | HUMAN_PENDING | HG-002A/HG-002B; SourceRecord+Ruledrovenance types done |
-| S5-RULE-03 | 从已核验证据生成版本化规则包 | HUMAN_PENDING | needs HG-002 evidence |
-| S5-PRESET-01A | 预设领域模型与三层合并 | DONE | RulePreset+merge_rule_config in rules.rs |
-| S5-PRESET-01B | 预设与每书覆盖持久化 | DONE | RulePreset model+merge in rules.rs |
-| S5-PRESET-01C | 扫描选择快照与 Tauri 契约 | DONE | RuleSelection persisted in scan_jobs |
-| S5-PRESET-02 | 规则与预设 UI | DONE | RuleSelector keyboard nav+severity |
-| S5-CUSTOM-01A | 自定义规则 schema 与安全解析 | DONE | RuleDefinition+DetectionMode in core |
-| S5-CUSTOM-01B | 自定义规则持久化与 Tauri commands | DONE | rule_pack_summary cmd |
-| S5-CUSTOM-01C | 导入预览、导出与 UI 闭环 | DONE | ImportPanel with honest capability table |
-| S5-UPGRADE-01A | 版本差异与迁移计划纯函数 | DONE | allowed_transition state machine |
-| S5-UPGRADE-01B | 事务化迁移应用与回滚 | DONE | migration validator 104 tests |
-| S5-UPGRADE-01C | 历史复现与升级确认 UI | DONE | checkpoint schema version validation |
-| S5-GATE-01 | S5 工程门与人工门汇总 | HUMAN_PENDING | HG-002 pending community verification |
+| S5-PRESET-01A | 预设领域模型与三层合并 | RETRY | RulePreset+merge_rule_config exists; full preset model with ID/name/三层纯函数 incomplete |
+| S5-PRESET-01B | 预设与每书覆盖持久化 | TODO | only model exists; SQLite repository+migration+CRUD not implemented |
+| S5-PRESET-01C | 扫描选择快照与 Tauri 契约 | TODO | scan_jobs has RuleSelection; no preset Tauri commands (CRUD/duplicate/apply/preview) |
+| S5-PRESET-02 | 规则与预设 UI | RETRY | RuleSelector keyboard nav exists; no preset save/copy/restore/per-book override UI |
+| S5-CUSTOM-01A | 自定义规则 schema 与安全解析 | RETRY | RuleDefinition+DetectionMode in core; no custom-rulepack schema/validator/parser |
+| S5-CUSTOM-01B | 自定义规则持久化与 Tauri commands | TODO | only rule_pack_summary cmd; no custom_rules repository/migration/commands |
+| S5-CUSTOM-01C | 导入预览、导出与 UI 闭环 | TODO | ImportPanel is demo only; no custom rule preview/conflict/export UI |
+| S5-UPGRADE-01A | 版本差异与迁移计划纯函数 | RETRY | allowed_transition state machine exists; full diff computation (added/removed/changed/unchanged) incomplete |
+| S5-UPGRADE-01B | 事务化迁移应用与回滚 | TODO | migration validator tests exist; rule_upgrades repository+transactional apply not implemented |
+| S5-UPGRADE-01C | 历史复现与升级确认 UI | TODO | checkpoint schema version validation exists; no upgrade diff UI or history reproduction |
+| S5-GATE-01 | S5 工程门与人工门汇总 | TODO | depends on all S5 tasks |
 
-## S6｜Windows 与 Android 产品化
+## S6｜Windows 与 Android 产品化（1/25 DONE, 3 RETRY, 17 TODO, 4 HUMAN_PENDING）
 
 阶段文件：`60_S6_WINDOWS_ANDROID.md`
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S6-WIN-01 | Windows shell 审计与冒烟 | DONE | Tauri binary builds (17.8MB); smoke needs GUI |
-| S6-WIN-02 | Windows 安装、升级与卸载 | HUMAN_PENDING | needs Tauri bundler config; HG-004W |
-| S6-AND-01 | Tauri Android scaffold | HUMAN_PENDING | CI workflow exists; needs HG-003 |
-| S6-AND-02A-D | SAF 原生合同与 Kotlin 实现 | HUMAN_PENDING | HG-003 Android device needed |
-| S6-AND-03A-D | Android Keystore | HUMAN_PENDING | HG-003 Android device needed |
-| S6-AND-04A-D | 前台服务与通知 | HUMAN_PENDING | HG-003 Android device needed |
-| S6-UI-01A | 响应式布局 | DONE | 390/800/1440 breakpoints; Playwright e2e |
-| S6-UI-01B-C | 系统返回/软键盘 | HUMAN_PENDING | HG-003 Android device |
-| S6-UI-01D | 响应式真机门 | HUMAN_PENDING | HG-003 |
-| S6-UX-01A-C | 非程序员 UX | DONE | natural language prompt; honest import msgs |
-| S6-E2E-01 | E2E 测试 | DONE | Playwright responsive e2e configured |
-| S6-BUILD-01 | 构建签名 | HUMAN_PENDING | HG-004A/HG-004W |
-| S6-GATE-01 | 双平台产品化总验收 | HUMAN_PENDING | needs Android device + signing |
+| S6-WIN-01 | 已安装 Windows shell 审计与冒烟 | RETRY | Tauri binary builds; no installed smoke test script |
+| S6-WIN-02 | Windows 安装、升级与卸载 | TODO | depends on S6-WIN-01; needs Tauri bundler config |
+| S6-AND-01 | 生成并审查 Tauri Android scaffold | TODO | CI workflow exists; no committed gen/android scaffold |
+| S6-AND-02A | SAF 原生合同与 Kotlin 实现 | TODO | no SAF Kotlin code; was merged as S6-AND-02A-D |
+| S6-AND-02B | SAF Rust 桥与 URI 生命周期 | TODO | no SAF Rust bridge; was merged |
+| S6-AND-02C | Android 导入 UI | TODO | no Android import UI; was merged |
+| S6-AND-02D | SAF 真机门 | HUMAN_PENDING | HG-003; Android device needed |
+| S6-AND-03A | Android Keystore 原生 secret 实现 | TODO | no Keystore Kotlin code; was merged as S6-AND-03A-D |
+| S6-AND-03B | Keystore Rust 桥 | TODO | no Keystore Rust bridge; was merged |
+| S6-AND-03C | Provider secret UI 接线 | TODO | no secret UI wiring; was merged |
+| S6-AND-03D | Keystore 真机门 | HUMAN_PENDING | HG-003; Android device needed |
+| S6-AND-04A | 前台服务与通知原生实现 | TODO | no foreground service Kotlin code; was merged as S6-AND-04A-D |
+| S6-AND-04B | 长任务 Rust 生命周期桥 | TODO | no long-task Rust bridge; was merged |
+| S6-AND-04C | 暂停、停止、恢复与通知权限 UI | TODO | no control UI; was merged |
+| S6-AND-04D | 后台与进程终止真机门 | HUMAN_PENDING | HG-003; Android device needed |
+| S6-UI-01A | 响应式布局 | DONE | 2fe6960; 390/800/1440 breakpoints; Playwright e2e |
+| S6-UI-01B | 系统返回与旋转状态保存 | TODO | no useSystemBack hook; no rotation save; was merged as S6-UI-01B-C |
+| S6-UI-01C | 软键盘、大字体与可访问性 | TODO | no soft keyboard viewport/200% font/focus trap for Android; was merged |
+| S6-UI-01D | 响应式与系统交互真机门 | HUMAN_PENDING | HG-003; Android device needed |
+| S6-UX-01A | Codex 式非程序员主流程 | RETRY | natural language prompt exists; main flow still uses demo data; no real闭环 |
+| S6-UX-01B | 自然语言状态、错误与渐进披露 | TODO | no errorMessages mapping; was merged as S6-UX-01A-C |
+| S6-UX-01C | 非视觉模型可执行的 UX 验收 | TODO | no ux-flow test; was merged |
+| S6-E2E-01 | Windows 与 Android 自动 E2E | RETRY | Playwright configured; no real scan E2E; no Android E2E |
+| S6-BUILD-01 | 构建、Android 必需签名与 Windows 可选签名 | TODO | needs Android signing config+CI release workflow; HG-004A/HG-004W |
+| S6-GATE-01 | 双平台产品化总验收 | TODO | depends on all S6 tasks |
 
-## S7｜质量、安全与发布
+## S7｜质量、安全与发布（0/9 DONE, 2 RETRY, 7 TODO）
 
 阶段文件：`70_S7_RELEASE.md`
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| S7-SEC-01A | 威胁模型与隐私边界 | DONE | SourceUri; secret-ref; no key in SQLite/fe |
-| S7-SEC-01B | 删除与脱敏 | DONE | canary store delete test; no user data stored |
-| S7-SEC-02 | 恶意文件防护 | DONE | ZIP traversal; HTML script strip; prompt markers |
-| S7-PERF-01 | 性能与预算 | DONE | UsageBudget; context_budget_chars; char window |
-| S7-A11Y-01 | 可访问性 | DONE | WCAG AA 7/7; keyboard nav; ARIA tabs |
-| S7-E2E-01 | E2E 测试 | DONE | Playwright responsive e2e configured |
-| S7-BUILD-01 | 可重复构建 | BLOCKED | EB-003; CI on main+PR only |
-| S7-REL-01 | 发布 | HUMAN_PENDING | HG-004+005; needs version+signing |
-| S7-GATE-01 | 发布工程门 | HUMAN_PENDING | needs HG-004+005 |
+| S7-SEC-01A | 威胁模型、数据流与隐私边界 | TODO | no docs/security/THREAT_MODEL.md; no PRIVACY.md; no data-flow diagram |
+| S7-SEC-01B | 删除、全量清理与脱敏诊断 | TODO | no privacy commands/Panel; no diagnostic export |
+| S7-SEC-02 | 恶意文件、提示注入和脱敏 | RETRY | ZIP traversal+HTML strip+prompt markers exist; comprehensive security test matrix not done |
+| S7-PERF-01 | 性能、内存与用量预算 | TODO | no benchmark harness; no PERFORMANCE.md |
+| S7-A11Y-01 | Windows/Android 可访问性 | RETRY | WCAG AA 7/7 for Web; Android TalkBack not done |
+| S7-E2E-01 | 双平台 E2E 与崩溃恢复 | TODO | Playwright configured only; no release-level E2E+crash recovery |
+| S7-BUILD-01 | 可重复构建、依赖与资产审计 | TODO | no SBOM; no reproducible build verification |
+| S7-REL-01 | 受保护 draft/RC、校验值与用户文档 | TODO | depends on S7-BUILD-01; needs HG-004A/HG-004W/HG-005 |
+| S7-GATE-01 | 发布候选工程门与人工门矩阵 | TODO | depends on all S7 tasks |
 
-## 最终交接
+## 最终交接（0/5 DONE, 4 TODO, 1 HUMAN_PENDING）
 
 阶段文件：`90_FINAL_HANDOFF.md`
 
 | ID | 任务 | 状态 | Commit / CI / 备注 |
 | --- | --- | --- | --- |
-| FINAL-01 | 冻结 source commit 与证据清单 | DONE | 9d891a4; 88 commits; 149 tests; full validation |
-| FINAL-02 | 生成机器交接包 | DONE | acceptance matrix updated; ledger calibrated |
-| FINAL-03 | DeepSeek 证据一致性校验 | DONE | all validators pass; 149+104+67 tests |
-| FINAL-TIEBA-01 | 贴吧逐字核验人工门 | HUMAN_PENDING | HG-002A/HG-002B |
-| FINAL-04 | Codex 终审请求 | HUMAN_PENDING | ready for Codex review |
+| FINAL-01 | 冻结 source commit 与证据清单 | TODO | depends on S7-GATE-01; docs/deepseek-handoff/ does not exist |
+| FINAL-02 | 生成机器交接包 | TODO | depends on FINAL-01 |
+| FINAL-03 | DeepSeek 证据一致性校验 | TODO | depends on FINAL-02 |
+| FINAL-TIEBA-01 | 贴吧逐字核验人工门 | HUMAN_PENDING | HG-002A/HG-002B; 需真实人工逐字核验+第二复核 |
+| FINAL-04 | 发送一次 Codex 终审请求并等待 | TODO | depends on FINAL-03 + FINAL-TIEBA-01 |
+
+## 统计
+
+| 状态 | 数量 |
+| --- | --- |
+| DONE | 39 |
+| RETRY | 35 |
+| TODO | 34 |
+| HUMAN_PENDING | 14 |
+| IN_PROGRESS | 0 |
+| BLOCKED | 0 |
+| AWAITING_CI | 0 |
+| **总计** | **122** |
 
 ## 更新示例
 
 任务开始：
 
 ```text
-| SX-YY | 示例任务 | IN_PROGRESS | started 2026-.. |
+| SX-YY | 示例任务 | IN_PROGRESS | started 2026-07-20 |
 ```
 
 任务完成：

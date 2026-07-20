@@ -91,6 +91,9 @@ jobs:
       - name: Validate capability allowlist
         run: npm run validate:capability
 
+      - name: Validate task ledger (122 atomic tasks)
+        run: node ../../docs/deepseek-runbook/validate-ledger.mjs
+
   e2e:
     name: E2E responsive (Playwright / Node 24)
     runs-on: ubuntu-latest
