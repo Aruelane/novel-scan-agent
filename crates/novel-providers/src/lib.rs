@@ -8,3 +8,4 @@ pub mod config;
 pub mod prompt;
 pub mod registry;
 pub mod schema;
+pub mod secret;
