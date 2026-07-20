@@ -74,7 +74,7 @@ mod tests {
 
     #[test]
     fn unverified_is_the_default_for_missing_provenance() {
-        let json = r#"{"id":"r1","source_refs":[],"verification":"unverified","note":""}"#;
+        let json = r#"{"ruleId":"r1","sourceRefs":[],"verification":"unverified","note":""}"#;
         let prov: RuleProvenance = serde_json::from_str(json).unwrap();
         assert_eq!(prov.verification, SourceVerification::Unverified);
     }
