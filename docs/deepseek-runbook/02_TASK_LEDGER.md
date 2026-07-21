@@ -88,7 +88,7 @@
 | S3-13 | SQLite 原子 ScanPersistence | DONE | 063a00c; EvidenceAnchor refactor fixed; scan_usage PK; 15 desktop tests pass; CI: https://github.com/Aruelane/novel-scan-agent/actions/runs/29819110716 |
 | S3-14 | 故障、重试与崩溃恢复矩阵 | DONE | 861662d; FaultInjectingProvider; 7 recovery matrix tests; 217 total tests pass
 | S3-15 | Tauri 扫描命令与事件桥 | DONE | f9e7a55; 5 typed commands (create/run/get/findings/evidence); ScanState; 217 tests pass
-| S3-16 | 前端真实任务进度和控制 | RETRY | ScanProgress shows "界面演示"; useAppState uses demoScanJobs; start button disabled |
+| S3-16 | 前端真实任务进度和控制 | DONE | ecad81c; scanService wraps 5 Tauri commands; start button enabled; demo badges removed; TS+FG build pass
 | S3-17 | 证据详情与来源章节回跳 | RETRY | EvidencePanel uses demoHits; no Tauri evidence detail command |
 | S3-18 | 长书测试与 S3 总门禁 | TODO | depends on S3-13～S3-17 |
 
@@ -205,8 +205,8 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 46 |
-| RETRY | 31 |
+| DONE | 47 |
+| RETRY | 30 |
 | TODO | 33 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
