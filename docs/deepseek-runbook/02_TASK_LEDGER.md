@@ -105,7 +105,7 @@
 | S4-05 | 确定性重试、限流和观测 | DONE | 6fd9422; 25 tests |
 | S4-06 | OpenAI-compatible adapter | DONE | 6e32667; generic OpenAI Chat Completions; 66 tests pass (20 new openai_compat); wire→parse→validate→ProviderResponse |
 | S4-07 | DeepSeek 兼容端点模板 | DONE | 34e3939; 15 integration tests; reuses OpenAiCompatAdapter; template verified: streaming=true, tool_calls=false; no API key leaks |
-| S4-08 | Anthropic native adapter | IN_PROGRESS | Anthropic Messages API; different wire format from OpenAI; shared HTTP/resilience/redaction |
+| S4-08 | Anthropic native adapter | DONE | 069c84c; x-api-key+anthropic-version headers; system as top-level field; content blocks parsing; 83+15=210 tests pass
 | S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
 | S4-10 | SecretStore 抽象与 canary | DONE | bf93dd6; 25 tests |
 | S4-11 | Windows Credential Manager | RETRY | 0a9d73c stub; resolve/store/delete return errors |
@@ -205,9 +205,9 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 42 |
+| DONE | 43 |
 | RETRY | 34 |
-| TODO | 34 |
+| TODO | 33 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
 | BLOCKED | 0 |
