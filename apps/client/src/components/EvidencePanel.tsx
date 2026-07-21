@@ -23,14 +23,8 @@ export function EvidencePanel({ hits, jobs, selectedBookId, onUpdateReview, clas
     ? hits.filter(h => bookJobIds.has(h.jobId))
     : [];
 
-  // Real confirmed: hits whose sourceKind is source_text AND findingStatus is confirmed.
-  const realConfirmedCount = relevantHits.filter(
-    h => h.sourceKind === 'source_text' && h.findingStatus === 'confirmed',
-  ).length;
-
-  // Demo confirmed: hits whose sourceKind is original_demo AND findingStatus is confirmed.
-  const demoConfirmedCount = relevantHits.filter(
-    h => h.sourceKind === 'original_demo' && h.findingStatus === 'confirmed',
+  const confirmedCount = relevantHits.filter(
+    h => h.findingStatus === 'confirmed',
   ).length;
 
   const reviewingCount = relevantHits.filter(h =>
@@ -50,7 +44,7 @@ export function EvidencePanel({ hits, jobs, selectedBookId, onUpdateReview, clas
             {relevantHits.length} 条命中
           </span>
           <span className="evidence-panel__detail">
-            {realConfirmedCount} 原文核验 · {demoConfirmedCount > 0 ? `${demoConfirmedCount} 演示核验 · ` : ''}{reviewingCount} 待确认
+            {confirmedCount} 已确认 · {reviewingCount} 待确认
           </span>
         </div>
       </div>

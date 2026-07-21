@@ -24,9 +24,7 @@ export function HitCard({ hit, onConfirm, onFalsePositive }: HitCardProps) {
           {confidenceLabel(hit.confidence)}
         </span>
         <span className="hit-card__confidence">
-          {hit.sourceKind === 'original_demo'
-            ? '演示核验状态'
-            : findingStatusLabel(hit.findingStatus)}
+          {findingStatusLabel(hit.findingStatus)}
         </span>
       </div>
 
@@ -40,9 +38,7 @@ export function HitCard({ hit, onConfirm, onFalsePositive }: HitCardProps) {
 
       {/* 原文摘录 */}
       <blockquote className="hit-card__excerpt" cite={`第${hit.chapter}章 ${hit.chapterTitle}`}>
-        <span className="hit-card__excerpt-label">
-          {hit.sourceKind === 'original_demo' ? '项目原创演示摘录：' : '原文摘录：'}
-        </span>
+        <span className="hit-card__excerpt-label">原文摘录：</span>
         {hit.excerpt}
       </blockquote>
 
