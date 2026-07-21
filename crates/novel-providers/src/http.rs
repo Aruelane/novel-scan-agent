@@ -126,6 +126,86 @@ impl HttpClient {
 
         Ok(bytes.to_vec())
     }
+
+    /// Like `post_json` but with explicit custom headers instead of a Bearer token.
+    /// Used by the Anthropic adapter which requires `x-api-key` and
+    /// `anthropic-version` headers instead of `Authorization: Bearer`.
+    ///
+    /// Sensitive header values (e.g., `x-api-key`) are sanitized from all
+    /// error messages.
+    pub async fn post_json_with_headers(
+        &self,
+        url: &str,
+        headers: &[(&str, &str)],
+        body: &serde_json::Value,
+    ) -> Result<Vec<u8>, ProviderError> {
+        // Find any sensitive header value for sanitization
+        let sensitive_value = headers
+            .iter()
+            .find(|(k, _)| *k == "x-api-key")
+            .map(|(_, v)| *v)
+            .unwrap_or("");
+
+        let mut request = self
+            .client
+            .post(url)
+            .header("Content-Type", "application/json");
+
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
+
+        let response = request.json(body).send().await.map_err(|e| {
+            let msg = e.to_string();
+            let sanitized = sanitize_string(&msg, sensitive_value);
+            let (code, retryable) = if e.is_timeout() {
+                ("TIMEOUT", true)
+            } else if e.is_connect() {
+                ("CONNECTION_ERROR", true)
+            } else {
+                ("HTTP_ERROR", false)
+            };
+            ProviderError::new(code, sanitized, retryable)
+        })?;
+
+        let status = response.status();
+        if !status.is_success() {
+            let status_code = status.as_u16();
+            let body_bytes = response.bytes().await.unwrap_or_default();
+            let body_text = String::from_utf8_lossy(&body_bytes);
+            let sanitized = sanitize_body(&body_text, sensitive_value, 500);
+            let retryable =
+                is_retryable_http_status(status_code) && !is_non_retryable_http_status(status_code);
+            return Err(ProviderError::new(
+                format!("HTTP_{}", status_code),
+                format!("Provider returned HTTP {}: {}", status_code, sanitized),
+                retryable,
+            ));
+        }
+
+        let bytes = response.bytes().await.map_err(|e| {
+            let msg = e.to_string();
+            ProviderError::new(
+                "DECODE_ERROR",
+                sanitize_string(&msg, sensitive_value),
+                false,
+            )
+        })?;
+
+        if bytes.len() > MAX_RESPONSE_BYTES {
+            return Err(ProviderError::new(
+                "RESPONSE_TOO_LARGE",
+                format!(
+                    "Response body {} exceeds maximum {} bytes",
+                    bytes.len(),
+                    MAX_RESPONSE_BYTES
+                ),
+                false,
+            ));
+        }
+
+        Ok(bytes.to_vec())
+    }
 }
 
 /// Classify a reqwest error into a `ProviderError`, sanitizing the bearer
