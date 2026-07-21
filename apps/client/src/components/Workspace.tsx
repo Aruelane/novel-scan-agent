@@ -29,6 +29,8 @@ interface WorkspaceProps {
   onSetRuleSeverity: (ruleId: string, severity: 1 | 2 | 3 | 4 | 5) => void;
   onPauseScan: (jobId: string) => void;
   onResumeScan: (jobId: string) => void;
+  onStartScan: (bookId: string) => void;
+  scanError: string | null;
   onImportBook: (sourceName: string, bytes: Uint8Array) => Promise<string>;
   onClearImportError: () => void;
   className?: string;
@@ -57,6 +59,8 @@ export function Workspace({
   onSetRuleSeverity,
   onPauseScan,
   onResumeScan,
+  onStartScan,
+  scanError,
   onImportBook,
   onClearImportError,
   className,
@@ -153,8 +157,10 @@ export function Workspace({
             <ScanProgress
               book={selectedBook}
               job={activeJob}
+              onStartScan={onStartScan}
               onPause={onPauseScan}
               onResume={onResumeScan}
+              scanError={scanError}
             />
           )}
 

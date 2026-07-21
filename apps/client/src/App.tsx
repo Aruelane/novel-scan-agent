@@ -37,6 +37,8 @@ export default function App() {
           onSetRuleSeverity={state.setRuleSeverity}
           onPauseScan={state.pauseScan}
           onResumeScan={state.resumeScan}
+          onStartScan={state.startScan}
+          scanError={state.scanError}
           onImportBook={state.importBook}
           onClearImportError={state.clearImportError}
           className={mobileClass('workspace')}

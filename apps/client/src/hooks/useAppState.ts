@@ -20,6 +20,7 @@ import {
 } from '../demo-data';
 import { loadImportCapabilities } from '../services/importCapabilities';
 import { importBookBytes } from '../services/importBooks';
+import { createScanJob, runScanBatch, listFindings } from '../services/scanService';
 
 /** Manages the full application state, with real data when Tauri is available. */
 export function useAppState() {
@@ -94,16 +95,69 @@ export function useAppState() {
     ));
   }, []);
 
-  const pauseScan = useCallback((jobId: string) => {
+  const [scanError, setScanError] = useState<string | null>(null);
+
+  const startScan = useCallback(async (bookId: string) => {
+    setScanError(null);
+    try {
+      const book = books.find(b => b.id === bookId);
+      if (!book) throw new Error('未找到该书籍');
+
+      // Create a minimal document JSON for the scan command
+      const documentJson = JSON.stringify({
+        id: book.id,
+        title: book.title,
+        source_name: book.sourceDisplayName,
+        format: book.format === 'txt' ? 'plain_text' : book.format,
+        chapters: [], // chapters are loaded from persistence
+        fingerprint: '',
+      });
+
+      const { job } = await createScanJob(documentJson);
+      setJobs(prev => [job, ...prev]);
+
+      // Auto-start the first batch
+      const updatedJob = await runScanBatch(job.id, 1);
+      setJobs(prev => prev.map(j => j.id === updatedJob.id ? updatedJob : j));
+
+      // Load any findings
+      try {
+        const findings = await listFindings(job.id);
+        if (findings.length > 0) {
+          setHits(prev => [...findings, ...prev]);
+        }
+      } catch {
+        // findings may be empty initially
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '扫描启动失败';
+      setScanError(message);
+    }
+  }, [books]);
+
+  const pauseScan = useCallback(async (jobId: string) => {
     setJobs(prev => prev.map(j =>
       j.id === jobId ? { ...j, status: 'paused' as const } : j
     ));
   }, []);
 
-  const resumeScan = useCallback((jobId: string) => {
-    setJobs(prev => prev.map(j =>
-      j.id === jobId ? { ...j, status: 'running' as const } : j
-    ));
+  const resumeScan = useCallback(async (jobId: string) => {
+    try {
+      const updatedJob = await runScanBatch(jobId, 1);
+      setJobs(prev => prev.map(j => j.id === updatedJob.id ? updatedJob : j));
+
+      const findings = await listFindings(jobId);
+      if (findings.length > 0) {
+        setHits(prev => {
+          const existingIds = new Set(prev.map(h => h.id));
+          const newOnes = findings.filter(h => !existingIds.has(h.id));
+          return [...newOnes, ...prev];
+        });
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : '继续扫描失败';
+      setScanError(message);
+    }
   }, []);
 
   const updateHitReview = useCallback((hitId: string, status: 'confirmed' | 'false_positive') => {
@@ -127,6 +181,7 @@ export function useAppState() {
     formatCapabilitiesLoading,
     formatCapabilitiesNotice,
     importError,
+    scanError,
     selectedBookId,
     activeTab,
     mobilePanel,
@@ -136,6 +191,7 @@ export function useAppState() {
     clearImportError,
     toggleRule,
     setRuleSeverity,
+    startScan,
     pauseScan,
     resumeScan,
     updateHitReview,

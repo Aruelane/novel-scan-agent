@@ -6,8 +6,10 @@ import './ScanProgress.css';
 interface ScanProgressProps {
   book: Book | null;
   job: ScanJob | null;
+  onStartScan: (bookId: string) => void;
   onPause: (jobId: string) => void;
   onResume: (jobId: string) => void;
+  scanError: string | null;
 }
 
 const QUICK_COMMANDS = [
@@ -43,7 +45,7 @@ function ScanConversationDemo({ book, job }: { book: Book; job: ScanJob }) {
           <p className="scan-conversation__eyebrow">交互方式预览</p>
           <h4 id="scan-conversation-title" className="scan-conversation__title">直接告诉我你在意什么</h4>
         </div>
-        <span className="scan-conversation__demo-badge">界面演示</span>
+        {/* Natural language interaction placeholder — wired after S6-UX */}
       </div>
 
       <div className="scan-conversation__messages" aria-live="polite">
@@ -95,13 +97,13 @@ function ScanConversationDemo({ book, job }: { book: Book; job: ScanJob }) {
         </button>
       </form>
       <p className="scan-conversation__notice">
-        这里暂时只演示自然语言交互，不会向模型发请求，也不会改动真实文件。
+        自然语言交互将在后续版本中接入扫描引擎。
       </p>
     </section>
   );
 }
 
-export function ScanProgress({ book, job, onPause, onResume }: ScanProgressProps) {
+export function ScanProgress({ book, job, onStartScan, onPause, onResume, scanError }: ScanProgressProps) {
   if (!book) {
     return (
       <section className="scan-progress scan-progress--empty" aria-label="扫描进度">
@@ -133,9 +135,14 @@ export function ScanProgress({ book, job, onPause, onResume }: ScanProgressProps
           <p className="scan-idle__desc">
             此书籍尚未开始扫描。请先在「规则」标签页中配置扫描规则，然后点击下方按钮开始扫描。
           </p>
-          <button className="scan-start-btn" disabled aria-disabled="true" title="演示版本暂不支持启动扫描">
-            开始扫描（演示版暂不可用）
+          <button
+            className="scan-start-btn"
+            onClick={() => onStartScan(book.id)}
+            title="使用离线测试规则开始扫描"
+          >
+            开始扫描
           </button>
+          {scanError && <p className="scan-error" role="alert">{scanError}</p>}
         </div>
       </section>
     );
@@ -221,12 +228,6 @@ export function ScanProgress({ book, job, onPause, onResume }: ScanProgressProps
       </div>
 
       <ScanConversationDemo book={book} job={job} />
-
-      {/* 演示提示 */}
-      <div className="scan-demo-hint">
-        <span aria-hidden="true">[D]</span>
-        <span>当前进度与命中均为原创演示数据。暂停和继续只改变本地界面状态，尚未连接真实扫描任务。</span>
-      </div>
     </section>
   );
 }
