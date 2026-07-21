@@ -205,8 +205,8 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 50 |
-| RETRY | 27 |
+| DONE | 51 |
+| RETRY | 26 |
 | TODO | 33 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
