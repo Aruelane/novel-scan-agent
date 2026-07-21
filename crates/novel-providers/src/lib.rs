@@ -7,6 +7,7 @@
 pub mod config;
 pub mod credential;
 pub mod http;
+pub mod openai_compat;
 pub mod prompt;
 pub mod redaction;
 pub mod registry;
