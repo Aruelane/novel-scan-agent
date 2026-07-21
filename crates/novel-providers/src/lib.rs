@@ -1,13 +1,14 @@
 //! Multi-provider adapter registry for the novel scan agent.
 //!
-//! This crate defines provider configuration, templates, and a registry of
-//! known providers. It does NOT make HTTP requests or access platform secret
-//! stores. Actual API adapters and secret management are built in later S4 tasks.
+//! This crate defines provider configuration, templates, HTTP transport with
+//! sanitization and cancellation, and a registry of known providers. Platform
+//! secret stores and Tauri commands are built in later S4 tasks.
 
 pub mod config;
 pub mod credential;
 pub mod http;
 pub mod prompt;
+pub mod redaction;
 pub mod registry;
 pub mod retry;
 pub mod schema;

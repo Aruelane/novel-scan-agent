@@ -85,7 +85,7 @@
 | S3-10 | 恢复指纹与 schema 验证 | DONE | ba78f53; 57 tests |
 | S3-11 | 章节原子提交持久化合同 | DONE | d6b831e; ChapterCommit+ScanPersistence trait |
 | S3-12 | V2 扫描运行与 usage migration | DONE | 1e53133; 104 migration tests |
-| S3-13 | SQLite 原子 ScanPersistence | AWAITING_CI | 89b7eb4; SqliteScanPersistence impl; CI: https://github.com/Aruelane/novel-scan-agent/actions/runs/29756705011 |
+| S3-13 | SQLite 原子 ScanPersistence | RETRY | 89b7eb4; CI failed (validator: no run URL at CI commit 1918956); URL added in f7a2b7c; re-triggering CI |
 | S3-14 | 故障、重试与崩溃恢复矩阵 | RETRY | retry.rs+StopReason contracts; fault injection matrix not implemented; needs S3-13 first |
 | S3-15 | Tauri 扫描命令与事件桥 | RETRY | invoke_handler only has import_capabilities+rule_pack_summary; no scan commands |
 | S3-16 | 前端真实任务进度和控制 | RETRY | ScanProgress shows "界面演示"; useAppState uses demoScanJobs; start button disabled |
@@ -101,7 +101,7 @@
 | S4-01 | Provider 配置与注册表 | DONE | 024d185; 3 production templates (OpenAI/DeepSeek/Anthropic); 27 tests pass |
 | S4-02 | 共享结构化输出 wire schema | DONE | 7223707; 25 tests |
 | S4-03 | 统一且防提示注入的扫描 prompt | DONE | 80c5193; 25 tests |
-| S4-04 | HTTP 执行、脱敏、超时与取消 | RETRY | cc5849c stub; real HTTP not implemented |
+| S4-04 | HTTP 执行、脱敏、超时与取消 | DONE | [pending commit]; reqwest+rustls real HTTP; RedactedSecret wrapper; 46 tests pass (19 new: 11 redaction + 8 http) |
 | S4-05 | 确定性重试、限流和观测 | DONE | 6fd9422; 25 tests |
 | S4-06 | OpenAI-compatible adapter | RETRY | ce542d6; simplified to DeepSeek only; must be generic OpenAI-compatible |
 | S4-07 | DeepSeek 兼容端点模板 | RETRY | merged into S4-01; needs independent template verification + fake server contract |
@@ -206,7 +206,7 @@
 | 状态 | 数量 |
 | --- | --- |
 | DONE | 39 |
-| RETRY | 35 |
+| RETRY | 36 |
 | TODO | 34 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
