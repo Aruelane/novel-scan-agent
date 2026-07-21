@@ -111,7 +111,7 @@
 | S4-11 | Windows Credential Manager | DONE | a7511fa; WindowsFileStore (unsafe_code=forbid compatible); MemoryStore; 10 tests; novel-providers dep wired
 | S4-12 | Android Keystore bridge 接口 | DONE | c16fab0; AndroidFakeStore; 6 tests (round-trip/delete/alias/clear/idempotent/sanitize); real JNI→S6
 | S4-13 | Provider profile v3 migration | DONE | 0cdc033; credential_ref hardened; 104 migration tests |
-| S4-14 | Tauri profile/credential 命令 | RETRY | import_novel_bytes+rule_pack_summary are NOT profile/credential commands |
+| S4-14 | Tauri profile/credential 命令 | IN_PROGRESS | needs profile CRUD + credential set/delete/state commands; DTO without secrets
 | S4-15 | 安全连接测试与 adapter factory | RETRY | e6ca08d; 27 tests; depends on real HTTP+adapter+credential chain |
 | S4-16 | 设置 UI、连接测试与预算 | RETRY | SettingsPanel is disabled demo; no real provider select/Key save/connection test |
 | S4-17 | 正文出站确认与按书授权 | RETRY | secret-ref contract exists but no outbound disclosure UI+command; was merged with S4-18 |

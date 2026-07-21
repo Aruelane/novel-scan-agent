@@ -4,6 +4,7 @@ use serde::Serialize;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 pub mod persistence;
+pub mod provider_commands;
 pub mod scan_commands;
 pub mod secrets;
 
@@ -189,6 +190,7 @@ pub fn run() {
                 .build(),
         )
         .manage(scan_commands::ScanState::new())
+        .manage(provider_commands::ProfileState::new())
         .invoke_handler(tauri::generate_handler![
             import_capabilities,
             import_novel_bytes,
