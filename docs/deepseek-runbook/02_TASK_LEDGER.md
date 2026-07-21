@@ -103,7 +103,7 @@
 | S4-03 | 统一且防提示注入的扫描 prompt | DONE | 80c5193; 25 tests |
 | S4-04 | HTTP 执行、脱敏、超时与取消 | DONE | 7ac36c6; reqwest+rustls real HTTP; RedactedSecret wrapper; 46 tests pass (19 new: 11 redaction + 8 http) |
 | S4-05 | 确定性重试、限流和观测 | DONE | 6fd9422; 25 tests |
-| S4-06 | OpenAI-compatible adapter | IN_PROGRESS | starting; was simplified to DeepSeek only; must be generic OpenAI-compatible per S4-06 spec |
+| S4-06 | OpenAI-compatible adapter | DONE | 6e32667; generic OpenAI Chat Completions; 66 tests pass (20 new openai_compat); wire→parse→validate→ProviderResponse |
 | S4-07 | DeepSeek 兼容端点模板 | RETRY | merged into S4-01; needs independent template verification + fake server contract |
 | S4-08 | Anthropic native adapter | TODO | marked SKIPPED in old ledger; Anthropic native is required by spec |
 | S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
@@ -205,8 +205,8 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 40 |
-| RETRY | 36 |
+| DONE | 41 |
+| RETRY | 35 |
 | TODO | 34 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
