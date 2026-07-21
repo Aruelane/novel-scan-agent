@@ -108,7 +108,7 @@
 | S4-08 | Anthropic native adapter | DONE | 069c84c; x-api-key+anthropic-version headers; system as top-level field; content blocks parsing; 83+15=210 tests pass
 | S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
 | S4-10 | SecretStore 抽象与 canary | DONE | bf93dd6; 25 tests |
-| S4-11 | Windows Credential Manager | IN_PROGRESS | WindowsFileStore: file-based secret store (unsafe_code=forbid compatible); 10 unit tests |
+| S4-11 | Windows Credential Manager | DONE | a7511fa; WindowsFileStore (unsafe_code=forbid compatible); MemoryStore; 10 tests; novel-providers dep wired
 | S4-12 | Android Keystore bridge 接口 | RETRY | bridge contract code not verified; needs fake tests; can't be HUMAN_PENDING without code |
 | S4-13 | Provider profile v3 migration | DONE | 0cdc033; credential_ref hardened; 104 migration tests |
 | S4-14 | Tauri profile/credential 命令 | RETRY | import_novel_bytes+rule_pack_summary are NOT profile/credential commands |
@@ -205,8 +205,8 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 48 |
-| RETRY | 29 |
+| DONE | 49 |
+| RETRY | 28 |
 | TODO | 33 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
