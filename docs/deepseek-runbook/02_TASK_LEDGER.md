@@ -86,7 +86,7 @@
 | S3-11 | 章节原子提交持久化合同 | DONE | d6b831e; ChapterCommit+ScanPersistence trait |
 | S3-12 | V2 扫描运行与 usage migration | DONE | 1e53133; 104 migration tests |
 | S3-13 | SQLite 原子 ScanPersistence | DONE | 063a00c; EvidenceAnchor refactor fixed; scan_usage PK; 15 desktop tests pass; CI: https://github.com/Aruelane/novel-scan-agent/actions/runs/29819110716 |
-| S3-14 | 故障、重试与崩溃恢复矩阵 | RETRY | retry.rs+StopReason contracts; fault injection matrix not implemented; needs S3-13 first |
+| S3-14 | 故障、重试与崩溃恢复矩阵 | IN_PROGRESS | retry.rs+StopReason contracts exist; needs fault injection matrix + crash recovery tests |
 | S3-15 | Tauri 扫描命令与事件桥 | RETRY | invoke_handler only has import_capabilities+rule_pack_summary; no scan commands |
 | S3-16 | 前端真实任务进度和控制 | RETRY | ScanProgress shows "界面演示"; useAppState uses demoScanJobs; start button disabled |
 | S3-17 | 证据详情与来源章节回跳 | RETRY | EvidencePanel uses demoHits; no Tauri evidence detail command |
