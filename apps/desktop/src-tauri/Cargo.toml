@@ -19,6 +19,7 @@ novel-import = { path = "../../../crates/novel-import" }
 novel-rulepack = { path = "../../../crates/novel-rulepack" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
+tokio = { version = "1", features = ["rt"] }
 tauri = { version = "2", features = [] }
 tauri-plugin-dialog = "2"
 tauri-plugin-sql = { version = "2", features = ["sqlite"] }

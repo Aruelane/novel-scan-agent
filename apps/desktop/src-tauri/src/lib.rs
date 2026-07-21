@@ -4,6 +4,7 @@ use serde::Serialize;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
 pub mod persistence;
+pub mod scan_commands;
 
 const DATABASE_URL: &str = "sqlite:novel-scout.db";
 
@@ -186,10 +187,16 @@ pub fn run() {
                 .add_migrations(DATABASE_URL, database_migrations())
                 .build(),
         )
+        .manage(scan_commands::ScanState::new())
         .invoke_handler(tauri::generate_handler![
             import_capabilities,
             import_novel_bytes,
-            rule_pack_summary
+            rule_pack_summary,
+            scan_commands::create_scan_job,
+            scan_commands::run_scan_batch,
+            scan_commands::get_scan_job,
+            scan_commands::list_findings,
+            scan_commands::get_evidence_detail,
         ])
         .run(tauri::generate_context!())
         .expect("error while running 小说扫评 Agent");

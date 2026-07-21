@@ -47,7 +47,7 @@ pub struct ScanCheckpoint {
 }
 
 impl ScanCheckpoint {
-    fn fresh(
+    pub fn fresh(
         task: &NovelTask,
         document: &NovelDocument,
         rules: &[RuleContext],
