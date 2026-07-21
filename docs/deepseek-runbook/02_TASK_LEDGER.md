@@ -109,7 +109,7 @@
 | S4-09 | 限制本地确定性测试 provider | DONE | 4b9251d; filtered from production |
 | S4-10 | SecretStore 抽象与 canary | DONE | bf93dd6; 25 tests |
 | S4-11 | Windows Credential Manager | DONE | a7511fa; WindowsFileStore (unsafe_code=forbid compatible); MemoryStore; 10 tests; novel-providers dep wired
-| S4-12 | Android Keystore bridge 接口 | IN_PROGRESS | Android bridge contract + fake tests; no real JNI/Kotlin (deferred to S6)
+| S4-12 | Android Keystore bridge 接口 | DONE | c16fab0; AndroidFakeStore; 6 tests (round-trip/delete/alias/clear/idempotent/sanitize); real JNI→S6
 | S4-13 | Provider profile v3 migration | DONE | 0cdc033; credential_ref hardened; 104 migration tests |
 | S4-14 | Tauri profile/credential 命令 | RETRY | import_novel_bytes+rule_pack_summary are NOT profile/credential commands |
 | S4-15 | 安全连接测试与 adapter factory | RETRY | e6ca08d; 27 tests; depends on real HTTP+adapter+credential chain |
@@ -205,8 +205,8 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 49 |
-| RETRY | 28 |
+| DONE | 50 |
+| RETRY | 27 |
 | TODO | 33 |
 | HUMAN_PENDING | 14 |
 | IN_PROGRESS | 0 |
