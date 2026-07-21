@@ -2,8 +2,10 @@
 //! Uses rusqlite with bundled SQLite for cross-platform atomic chapter commits.
 
 use novel_core::persistence::{ChapterCommit, ScanPersistence};
-use novel_core::{EvidenceAnchor, Finding, ProcessedChapter, ScanCheckpoint, ScanError, UsageTotals};
-use rusqlite::{Connection, params};
+use novel_core::{
+    EvidenceAnchor, Finding, ProcessedChapter, ScanCheckpoint, ScanError, UsageTotals,
+};
+use rusqlite::{params, Connection};
 use std::sync::Mutex;
 
 /// SQLite-backed persistence implementing `ScanPersistence`.
@@ -50,33 +52,35 @@ impl SqliteScanPersistence {
                 FOREIGN KEY (finding_id) REFERENCES scan_findings(id)
             );
             CREATE TABLE IF NOT EXISTS scan_usage (
-                task_id TEXT NOT NULL,
+                task_id TEXT PRIMARY KEY,
                 input_units INTEGER NOT NULL DEFAULT 0,
                 output_units INTEGER NOT NULL DEFAULT 0,
                 FOREIGN KEY (task_id) REFERENCES scan_checkpoints(task_id)
             );",
         )
-        .map_err(|e| ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string())))?;
+        .map_err(|e| {
+            ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string()))
+        })?;
         Ok(())
     }
 }
 
 fn lock_error() -> ScanError {
-    ScanError::Checkpoint(novel_core::CheckpointStoreError::new("database lock poisoned"))
+    ScanError::Checkpoint(novel_core::CheckpointStoreError::new(
+        "database lock poisoned",
+    ))
 }
 
 /// Serialize a checkpoint to a JSON string, failing gracefully.
 fn serialize_checkpoint(cp: &ScanCheckpoint) -> Result<String, ScanError> {
-    serde_json::to_string(cp).map_err(|e| {
-        ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string()))
-    })
+    serde_json::to_string(cp)
+        .map_err(|e| ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string())))
 }
 
 /// Deserialize a checkpoint from a JSON string.
 fn deserialize_checkpoint(json: &str) -> Result<ScanCheckpoint, ScanError> {
-    serde_json::from_str(json).map_err(|e| {
-        ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string()))
-    })
+    serde_json::from_str(json)
+        .map_err(|e| ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string())))
 }
 
 impl ScanPersistence for SqliteScanPersistence {
@@ -85,7 +89,7 @@ impl ScanPersistence for SqliteScanPersistence {
         checkpoint: &ScanCheckpoint,
         processed: &[ProcessedChapter],
         new_findings: &[Finding],
-        new_evidence: &[EvidenceAnchor],
+        _new_evidence: &[EvidenceAnchor],
         usage: &UsageTotals,
     ) -> Result<ChapterCommit, ScanError> {
         let conn = self.conn.lock().map_err(|_| lock_error())?;
@@ -136,25 +140,19 @@ impl ScanPersistence for SqliteScanPersistence {
                     ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string()))
                 })?;
 
-                // Insert evidence for this finding
-                for evidence in new_evidence {
-                    if evidence.finding_id == finding.id {
-                        let ej = serde_json::to_string(evidence).map_err(|e| {
-                            ScanError::Checkpoint(novel_core::CheckpointStoreError::new(
-                                &e.to_string(),
-                            ))
-                        })?;
-                        conn.execute(
-                            "INSERT INTO scan_evidence (finding_id, evidence_json)
-                             VALUES (?1, ?2)",
-                            params![finding.id, ej],
-                        )
-                        .map_err(|e| {
-                            ScanError::Checkpoint(novel_core::CheckpointStoreError::new(
-                                &e.to_string(),
-                            ))
-                        })?;
-                    }
+                // Insert evidence for this finding (embedded in Finding.evidence)
+                for evidence in &finding.evidence {
+                    let ej = serde_json::to_string(evidence).map_err(|e| {
+                        ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string()))
+                    })?;
+                    conn.execute(
+                        "INSERT INTO scan_evidence (finding_id, evidence_json)
+                         VALUES (?1, ?2)",
+                        params![finding.id, ej],
+                    )
+                    .map_err(|e| {
+                        ScanError::Checkpoint(novel_core::CheckpointStoreError::new(&e.to_string()))
+                    })?;
                 }
             }
 
@@ -163,15 +161,15 @@ impl ScanPersistence for SqliteScanPersistence {
                 .map(|p| p.chapter_id.clone())
                 .unwrap_or_default();
             // Use position from checkpoint
-            let pos = checkpoint
-                .next_chapter_position
-                .saturating_sub(1);
+            let pos = checkpoint.next_chapter_position.saturating_sub(1);
+
+            let evidence_count: usize = new_findings.iter().map(|f| f.evidence.len()).sum();
 
             Ok(ChapterCommit {
                 chapter_id: ordinal,
                 ordinal: pos as u32,
                 findings_count: new_findings.len(),
-                evidence_count: new_evidence.len(),
+                evidence_count,
             })
         })();
 
@@ -236,11 +234,10 @@ use rusqlite::OptionalExtension;
 mod tests {
     use super::*;
     use novel_core::{
-        AlertLevel, Chapter, ChapterRef, DocumentFormat, FindingStatus, NovelDocument, NovelTask,
-        ProviderStamp, RuleCategory, ScanConfig, SourceLocator,
+        AlertLevel, ChapterRef, FindingStatus, ProviderStamp, RuleCategory, SourceLocator,
     };
 
-    fn make_checkpoint(task_id: &str, position: u32) -> ScanCheckpoint {
+    fn make_checkpoint(task_id: &str, position: usize) -> ScanCheckpoint {
         ScanCheckpoint {
             schema_version: 2,
             task_id: task_id.into(),
@@ -311,19 +308,37 @@ mod tests {
     fn commit_chapter_saves_findings_and_evidence() {
         let store = SqliteScanPersistence::new_in_memory().unwrap();
         let cp = make_checkpoint("t2", 2);
-        let finding = make_finding("f1");
         let evidence = EvidenceAnchor {
-            finding_id: "f1".into(),
+            source: ChapterRef {
+                document_id: "d1".into(),
+                chapter_id: "c2".into(),
+                chapter_ordinal: 1,
+                chapter_title: "Ch2".into(),
+                locator: SourceLocator::Unknown {
+                    description: "x".into(),
+                },
+            },
+            span: novel_core::TextSpan {
+                utf8_byte_start: 0,
+                utf8_byte_end: 4,
+                line_start: 0,
+                line_end: 0,
+            },
             exact_quote: "test".into(),
             quote_hash: "qh1".into(),
-            chapter_id: "c2".into(),
-            chapter_title: "Ch2".into(),
-            byte_start: 0,
-            byte_end: 4,
+            chapter_content_hash: "h1".into(),
         };
+        let mut finding = make_finding("f1");
+        finding.evidence = vec![evidence];
 
         let commit = store
-            .commit_chapter(&cp, &cp.processed_chapters, &[finding], &[evidence], &UsageTotals::default())
+            .commit_chapter(
+                &cp,
+                &cp.processed_chapters,
+                &[finding],
+                &[],
+                &UsageTotals::default(),
+            )
             .unwrap();
 
         assert_eq!(commit.findings_count, 1);
@@ -349,12 +364,21 @@ mod tests {
         // commit_chapter on same task should upsert, not fail
         let finding = make_finding("f2");
         let commit = store
-            .commit_chapter(&cp, &cp.processed_chapters, &[finding], &[], &UsageTotals::default())
+            .commit_chapter(
+                &cp,
+                &cp.processed_chapters,
+                &[finding],
+                &[],
+                &UsageTotals::default(),
+            )
             .unwrap();
         assert_eq!(commit.findings_count, 1);
 
         // Verify the checkpoint was updated
         let loaded = store.load_checkpoint("t3").unwrap().unwrap();
-        assert!(loaded.processed_chapters.iter().any(|p| p.chapter_id == "c1"));
+        assert!(loaded
+            .processed_chapters
+            .iter()
+            .any(|p| p.chapter_id == "c1"));
     }
 }
