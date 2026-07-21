@@ -101,7 +101,7 @@
 | S4-01 | Provider 配置与注册表 | DONE | 024d185; 3 production templates (OpenAI/DeepSeek/Anthropic); 27 tests pass |
 | S4-02 | 共享结构化输出 wire schema | DONE | 7223707; 25 tests |
 | S4-03 | 统一且防提示注入的扫描 prompt | DONE | 80c5193; 25 tests |
-| S4-04 | HTTP 执行、脱敏、超时与取消 | DONE | [pending commit]; reqwest+rustls real HTTP; RedactedSecret wrapper; 46 tests pass (19 new: 11 redaction + 8 http) |
+| S4-04 | HTTP 执行、脱敏、超时与取消 | DONE | 7ac36c6; reqwest+rustls real HTTP; RedactedSecret wrapper; 46 tests pass (19 new: 11 redaction + 8 http) |
 | S4-05 | 确定性重试、限流和观测 | DONE | 6fd9422; 25 tests |
 | S4-06 | OpenAI-compatible adapter | RETRY | ce542d6; simplified to DeepSeek only; must be generic OpenAI-compatible |
 | S4-07 | DeepSeek 兼容端点模板 | RETRY | merged into S4-01; needs independent template verification + fake server contract |
@@ -205,7 +205,7 @@
 
 | 状态 | 数量 |
 | --- | --- |
-| DONE | 39 |
+| DONE | 40 |
 | RETRY | 36 |
 | TODO | 34 |
 | HUMAN_PENDING | 14 |
