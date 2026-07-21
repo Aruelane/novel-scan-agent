@@ -5,6 +5,7 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 pub mod persistence;
 pub mod scan_commands;
+pub mod secrets;
 
 const DATABASE_URL: &str = "sqlite:novel-scout.db";
 

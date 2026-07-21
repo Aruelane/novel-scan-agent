@@ -17,6 +17,7 @@ tauri-build = { version = "2", features = [] }
 novel-core = { path = "../../../crates/novel-core" }
 novel-import = { path = "../../../crates/novel-import" }
 novel-rulepack = { path = "../../../crates/novel-rulepack" }
+novel-providers = { path = "../../../crates/novel-providers" }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 tokio = { version = "1", features = ["rt"] }
